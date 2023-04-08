@@ -18,4 +18,7 @@ examples:
 	$(MAKE) -C gofs BUILD=../$(BUILD) examples
 	@echo "===== XTC EXAMPLES BUILD DONE ====="
 
-.PHONY: all tests examples
+clean:
+	@-rm -rf $(BUILD)
+
+.PHONY: all clean tests examples

@@ -12,4 +12,7 @@ examples:
 	@echo
 	@echo "----- GOFS EXAMPLES BUILD DONE -----"
 
-.PHONY: all tests examples
+clean:
+	@-rm -rf $(BUILD)
+
+.PHONY: all clean tests examples
