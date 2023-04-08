@@ -1,24 +1,22 @@
 BUILD ?= build
 
-all:
-	$(MAKE) -C allocs BUILD=../$(BUILD)
-	$(MAKE) -C objs BUILD=../$(BUILD)
-	$(MAKE) -C gofs BUILD=../$(BUILD)
-	@echo "===== XTC BUILD DONE ====="
+PROJS := allocs objs gofs
+TARGET =
 
-tests:
-	$(MAKE) -C allocs BUILD=../$(BUILD) tests
-	$(MAKE) -C objs BUILD=../$(BUILD) tests
-	$(MAKE) -C gofs BUILD=../$(BUILD) tests
-	@echo "===== XTC TESTS BUILD DONE ====="
+all: TARGET = all
+tests: TARGET = tests
+examples: TARGET = examples
 
-examples:
-	$(MAKE) -C allocs BUILD=../$(BUILD) examples
-	$(MAKE) -C objs BUILD=../$(BUILD) examples
-	$(MAKE) -C gofs BUILD=../$(BUILD) examples
-	@echo "===== XTC EXAMPLES BUILD DONE ====="
+all tests examples: $(PROJS)
+	@echo
+	@echo "===== XTC BUILD DONE / @ = $@ ====="
+	@echo
+
+$(PROJS):
+	@echo
+	$(MAKE) -C $@ BUILD=../$(BUILD) $(TARGET)
 
 clean:
 	@-rm -rf $(BUILD)
 
-.PHONY: all clean tests examples
+.PHONY: all clean tests examples $(PROJS)
