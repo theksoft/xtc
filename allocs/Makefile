@@ -1,13 +1,8 @@
 BUILD ?= build
+LIBNAME ?= xtcallocs
 
-all:
-	@echo "----- ALLOCS BUILD DONE -----"
-
-tests:
-	@echo "----- ALLOCS TESTS BUILD DONE -----"
-
-examples:
-	@echo "----- ALLOCS EXAMPLES BUILD DONE -----"
+all tests examples:
+	@echo "----- ALLOCS BUILD DONE / lib = $(LIBNAME) / @ = $@ -----"
 
 clean:
 	@-rm -rf $(BUILD)

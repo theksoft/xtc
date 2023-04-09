@@ -1,13 +1,8 @@
 BUILD ?= build
+LIBNAME ?= xtcgofs
 
-all:
-	@echo "----- GOFS BUILD DONE -----"
-
-tests:
-	@echo "----- GOFS TESTS BUILD DONE -----"
-
-examples:
-	@echo "----- GOFS EXAMPLES BUILD DONE -----"
+all tests examples:
+	@echo "----- GOFS BUILD DONE / lib = $(LIBNAME) / @ = $@ -----"
 
 clean:
 	@-rm -rf $(BUILD)

@@ -1,13 +1,8 @@
 BUILD ?= build
+LIBNAME ?= xtcobjs
 
-all:
-	@echo "----- OBJS BUILD DONE -----"
-
-tests:
-	@echo "----- OBJS TESTS BUILD DONE -----"
-
-examples:
-	@echo "----- OBJS EXAMPLES BUILD DONE -----"
+all tests examples:
+	@echo "----- OBJS BUILD DONE / lib = $(LIBNAME) / @ = $@ -----"
 
 clean:
 	@-rm -rf $(BUILD)
