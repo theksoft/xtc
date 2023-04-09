@@ -1,26 +1,26 @@
 BUILD ?= build
 LIBNAME ?= xtc
 
-PRJS := allocs objs gofs
-PRJBLD := ../$(BUILD)
+PKGS := allocs objs gofs
+PKGBLD := ../$(BUILD)
 TARGET =
 
 all: TARGET = all
 tests: TARGET = tests
 examples: TARGET = examples
 clean: TARGET = clean
-clean: PRJBLD = build
+clean: PKGBLD = build
 
-all tests examples: $(PRJS)
+all tests examples: $(PKGS)
 	@echo
 	@echo "===== XTC BUILD DONE / lib = $(LIBNAME) / @ = $@ ====="
 	@echo
 
-clean: $(PRJS)
+clean: $(PKGS)
 	@-rm -rf $(BUILD)
 
-$(PRJS):
+$(PKGS):
 	@echo
-	$(MAKE) -C $@ BUILD=$(PRJBLD) LIBNAME=$(LIBNAME) $(TARGET)
+	$(MAKE) -C $@ BUILD=$(PKGBLD) LIBNAME=$(LIBNAME) $(TARGET)
 
-.PHONY: all clean tests examples $(PRJS)
+.PHONY: all clean tests examples $(PKGS)
