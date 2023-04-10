@@ -1,5 +1,5 @@
 BUILD ?= build
-LIBNAME ?= xch
+LIBNAME ?= xgnrhp
 
 # Predefined folders
 
@@ -18,7 +18,7 @@ LIBTGT := $(LIBD)/lib$(LIBNAME)
 
 # Source list
 
-SRCS := xtc_heaps
+SRCS := xtc_gnrhp
 
 # Tool chain base flags
 

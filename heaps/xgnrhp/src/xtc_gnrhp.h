@@ -1,5 +1,5 @@
-#ifndef _XTC_HEAPS_H_
-#define _XTC_HEAPS_H_
+#ifndef _XTC_GNRHP_H_
+#define _XTC_GNRHP_H_
 
 #include <stdlib.h>
 
@@ -25,13 +25,10 @@ typedef struct xtc_heap_s {
 void* xtc_alloc(xtc_heap_t *heap, size_t size);
 void xtc_free(xtc_heap_t *heap, void *ptr);
 
-// System heap in the XTC form
-xtc_heap_t* sys_heap();
-
 // Protection interface for thread safety if required
 typedef struct {
   void (*lock)();
   void (*unlock)();
 } xtc_protect_t;
 
-#endif // _XTC_HEAPS_H_
+#endif // _XTC_GNRHP_H_
