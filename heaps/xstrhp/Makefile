@@ -1,5 +1,5 @@
 BUILD ?= build
-LIBNAME ?= xsh
+LIBNAME ?= xtcstrhp
 
 # Predefined folders
 
@@ -18,7 +18,7 @@ LIBTGT := $(LIBD)/lib$(LIBNAME)
 
 # Source list
 
-SRCS := xsh
+SRCS := xtc_strhp
 
 # Tool chain base flags
 
@@ -28,13 +28,13 @@ ARFLAGS := rcs
 
 # Main target
 all: dirs $(LIBTGT).a $(LIBTGT)d.a
-	@echo "..... XSH BUILD DONE / lib = $(LIBNAME) ....."
+	@echo "..... XTC STRUCTURE HEAP BUILD DONE / lib = $(LIBNAME) ....."
 
 tests: dirs $(LIBTGT).a $(LIBTGT)d.a
-	@echo "..... XSH TEST BUILD DONE / test = $(TSTNAME) ....."
+	@echo "..... XTC STRUCTURE HEAP TEST BUILD DONE / test = $(TSTNAME) ....."
 
 examples: dirs $(LIBTGT).a $(LIBTGT)d.a
-	@echo "..... XSH EXAMPLE BUILD DONE / example = $(XMPNAME) ....."
+	@echo "..... XTC STRUCTURE HEAP EXAMPLE BUILD DONE / example = $(XMPNAME) ....."
 
 # Dependencies management
 

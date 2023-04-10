@@ -1,5 +1,5 @@
-#ifndef _XSH_H_
-#define _XSH_H_
+#ifndef _XTC_STRHP_H_
+#define _XTC_STRHP_H_
 
 #include "xtc_gnrhp.h"
 #include <stdlib.h>
@@ -83,4 +83,4 @@ void* xsh_alloc(xsh_heap_t *this, size_t size);
 
 void xsh_free(xsh_heap_t *this, void *ptr);
 
-#endif // _XSH_H_
+#endif // _XTC_STRHP_H_

@@ -28,13 +28,13 @@ ARFLAGS := rcs
 
 # Main target
 all: dirs $(LIBTGT).a $(LIBTGT)d.a
-	@echo "..... XTC COMMON HEAPS BUILD DONE / lib = $(LIBNAME) ....."
+	@echo "..... XTC SYSTEM HEAP BUILD DONE / lib = $(LIBNAME) ....."
 
 tests: dirs $(LIBTGT).a $(LIBTGT)d.a
-	@echo "..... XTC COMMON HEAPS TEST BUILD DONE / test = $(TSTNAME) ....."
+	@echo "..... XTC SYSTEM HEAP TEST BUILD DONE / test = $(TSTNAME) ....."
 
 examples: dirs $(LIBTGT).a $(LIBTGT)d.a
-	@echo "..... XTC COMMON HEAPS EXAMPLE BUILD DONE / example = $(XMPNAME) ....."
+	@echo "..... XTC SYSTEM HEAP EXAMPLE BUILD DONE / example = $(XMPNAME) ....."
 
 # Dependencies management
 
