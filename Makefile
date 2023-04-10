@@ -1,7 +1,7 @@
 BUILD ?= build
 LIBNAME ?= xtc
 
-PKGS := allocs objs gofs
+PKGS := heaps objs gofs
 PKGBLD := ../$(BUILD)
 TARGET =
 
@@ -17,7 +17,7 @@ all tests examples: $(PKGS)
 	@echo
 
 clean: $(PKGS)
-	@-rm -rf $(BUILD)
+	@-$(RM) -r $(BUILD)
 
 $(PKGS):
 	@echo
