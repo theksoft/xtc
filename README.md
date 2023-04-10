@@ -1,2 +1,2 @@
 # xtc
-C templates
+Some C templates
