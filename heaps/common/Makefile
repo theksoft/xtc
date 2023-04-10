@@ -1,15 +1,5 @@
 BUILD ?= build
-LIBNAME ?= xtcheaps
-
-PKGS := xsh common
-PKGBLD := ../$(BUILD)
-TARGET =
-
-all: TARGET = all
-tests: TARGET = tests
-examples: TARGET = examples
-clean: TARGET = clean
-clean: PKGBLD = build
+LIBNAME ?= xch
 
 # Predefined folders
 
@@ -37,15 +27,14 @@ CFLAGS += -I ../src
 ARFLAGS := rcs
 
 # Main target
+all: dirs $(LIBTGT).a $(LIBTGT)d.a
+	@echo "..... XTC COMMON HEAPS BUILD DONE / lib = $(LIBNAME) ....."
 
-all tests examples: dirs $(PKGS) $(LIBTGT).a $(LIBTGT)d.a
-	@echo "..... HEAPS BUILD DONE / lib = $(LIBNAME) ....."
+tests: dirs $(LIBTGT).a $(LIBTGT)d.a
+	@echo "..... XTC COMMON HEAPS TEST BUILD DONE / test = $(TSTNAME) ....."
 
-# Package targets
-
-$(PKGS):
-	@echo
-	$(MAKE) -C $@ BUILD=$(PKGBLD) LIBNAME=$(LIBNAME) $(TARGET)
+examples: dirs $(LIBTGT).a $(LIBTGT)d.a
+	@echo "..... XTC COMMON HEAPS EXAMPLE BUILD DONE / example = $(XMPNAME) ....."
 
 # Dependencies management
 
@@ -85,7 +74,7 @@ dirs: $(DIRS)
 $(DIRS):
 	@mkdir -p $@
 
-.PHONY: all clean tests examples $(PKGS) dirs $(DIRS)
+.PHONY: all clean tests examples dirs $(DIRS)
 
 # Dependencies
 
