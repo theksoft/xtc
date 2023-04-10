@@ -23,7 +23,6 @@ SRCS := xtc_gnrhp
 # Tool chain base flags
 
 CFLAGS += -Wall -Wextra -Werror -Wpedantic --pedantic-errors -std=c11
-CFLAGS += -I ../src
 ARFLAGS := rcs
 
 # Main target
