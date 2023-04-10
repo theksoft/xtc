@@ -23,7 +23,7 @@ SRCS := xsh
 # Tool chain base flags
 
 CFLAGS += -Wall -Wextra -Werror -Wpedantic --pedantic-errors -std=c11
-CFLAGS += -I ../src
+CFLAGS += -I ../xgnrhp/src
 ARFLAGS := rcs
 
 # Main target

@@ -1,7 +1,7 @@
 #ifndef _XSH_H_
 #define _XSH_H_
 
-#include "xtc_heaps.h"
+#include "xtc_gnrhp.h"
 #include <stdlib.h>
 
 // Structure must be aligned on integer boundary
