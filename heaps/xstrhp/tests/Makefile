@@ -1,7 +1,5 @@
 BUILD ?= build
-LIBNAME ?= xtcstrhp
-
-PKGBLD := ../$(BUILD)
+LIBNAME ?= xshtest
 
 # Predefined folders
 
@@ -14,30 +12,24 @@ BIND := $(BUILD)/bin
 OBJD := $(BUILD)/obj/heaps
 DIRS := $(LIBD) $(BIND) $(OBJD)
 
-# Library path base
+# Library and test exe path base
 
 LIBTGT := $(LIBD)/lib$(LIBNAME)
+EXETGT := $(BIND)/xtc-test-xstrhp
 
 # Source list
 
-SRCS := xtc_strhp
+SRCS := cu_main_xsh cu_tests
 
 # Tool chain base flags
 
 CFLAGS += -Wall -Wextra -Werror -Wpedantic --pedantic-errors -std=c11
-CFLAGS += -I ../xgnrhp/src
-ARFLAGS := rcs
+CFLAGS += -I ../../xgnrhp/src -I ../src
+LDFLAGS += -fPIC -lcunit -l$(LIBNAME) -L$(LIBD)
 
 # Main target
-all: dirs $(LIBTGT).a $(LIBTGT)d.a
-	@echo "..... XTC STRUCTURE HEAP BUILD DONE / lib = $(LIBNAME) ....."
 
-tests: dirs $(LIBTGT).a $(LIBTGT)d.a
-	$(MAKE) -C tests BUILD=$(PKGBLD) LIBNAME=$(LIBNAME)
-	@echo "..... XTC STRUCTURE HEAP TEST BUILD DONE / test = $(TSTNAME) ....."
-
-examples: dirs $(LIBTGT).a $(LIBTGT)d.a
-	@echo "..... XTC STRUCTURE HEAP EXAMPLE BUILD DONE / example = $(XMPNAME) ....."
+all: dirs $(LIBTGT).a $(LIBTGT)d.a $(EXETGT) $(EXETGT)-d
 
 # Dependencies management
 
@@ -48,8 +40,8 @@ $(OBJD)/%.d: $(SRCD)/%.c | $(OBJD)
 
 # Target specificities
 
-$(LIBTGT).a: CFLAGS += -O2 -DNDEBUG=1
-$(LIBTGT)d.a: CFLAGS += -g -D__DEBUG
+$(EXETGT): CFLAGS += -O2 -DNDEBUG=1
+$(EXETGT)-d: CFLAGS += -g -D__DEBUG
 
 # Object files build rules
 
@@ -59,26 +51,30 @@ $(OBJD)/%.o: $(SRCD)/%.c
 $(OBJD)/%-g.o: $(SRCD)/%.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
+# Executable targets
+
+$(EXETGT): $(SRCS:%=$(OBJD)/%.o)
+	$(CC) $^ $(LDFLAGS) -o $@
+
+$(EXETGT)-d: $(SRCS:%=$(OBJD)/%-g.o)
+	$(CC) $^ $(LDFLAGS) -o $@
+
 # Library targets
 
-$(LIBTGT).a: $(SRCS:%=$(OBJD)/%.o)
-	$(AR) $(ARFLAGS) $@ $^
-
-$(LIBTGT)d.a: $(SRCS:%=$(OBJD)/%-g.o)
-	$(AR) $(ARFLAGS) $@ $^
+$(LIBTGT).a $(LIBTGT)d.a:
+	@$(MAKE) -C .. BUILD=./tests/$(BUILD) LIBNAME=$(LIBNAME)
 
 # Other targets
 
 clean:
 	@-$(RM) -r $(BUILD)
-	@$(MAKE) -C tests BUILD=build clean
 
 dirs: $(DIRS)
 
 $(DIRS):
 	@mkdir -p $@
 
-.PHONY: all clean tests examples dirs
+.PHONY: all clean dirs
 
 # Dependencies
 

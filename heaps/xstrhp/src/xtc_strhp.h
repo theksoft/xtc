@@ -83,4 +83,16 @@ void* xsh_alloc(xsh_heap_t *this, size_t size);
 
 void xsh_free(xsh_heap_t *this, void *ptr);
 
+/**
+ * @brief Get the count of free blocks
+ * 
+ * This implementation is time-consuming by looping the free list.
+ * 
+ * @param this Structure heap
+ * @return
+ * THe number of free blocks is returned.
+ */
+
+size_t xsh_free_count(xsh_heap_t *this);
+
 #endif // _XTC_STRHP_H_

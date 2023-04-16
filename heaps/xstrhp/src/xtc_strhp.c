@@ -80,7 +80,7 @@ xtc_heap_t* xsh_init(xsh_heap_t *this, void *mem, size_t length, size_t size, xt
   xtc_heap_t *rtn = NULL;
   size_t node_size = XTC_ALIGNED_SIZE(size) + sizeof(xsh_node_t);
   if (this && mem && size && node_size <= length) {
-    if (protect && protect->lock && protect->unlock) {
+    if (!protect || (protect->lock && protect->unlock)) {
       this->interface.id = get_id();
       this->interface.alloc = (xtc_alloc_t)xsh_alloc;
       this->interface.free = (xtc_free_t)xsh_free;
@@ -114,13 +114,11 @@ void* xsh_alloc(xsh_heap_t *this, size_t size) {
   xsh_heap_t *heap = check(this);
   if(heap && size == heap->size) {
     heap->protect.lock();
-    if (heap && size == heap->size) {
-      xsh_node_t *node = heap->lfree;
-      if (node) {
-        heap->lfree = node->next;
-        node->next = NULL;
-        rtn = (void*)(node+1);
-      }
+    xsh_node_t *node = heap->lfree;
+    if (node) {
+      heap->lfree = node->next;
+      node->next = NULL;
+      rtn = (void*)(node+1);
     }
     heap->protect.unlock();
   }
@@ -132,12 +130,25 @@ void xsh_free(xsh_heap_t *this, void *ptr) {
   if (heap && ptr) {
     heap->protect.lock();
     xsh_node_t *node = get_node(heap, ptr);
-    if (node) {
+    if (node && NULL == node->next) {
       node->next = heap->lfree;
       heap->lfree = node;
     }
     heap->protect.unlock();
   }
+}
+
+size_t xsh_free_count(xsh_heap_t *this) {
+  size_t rtn = 0;
+  xsh_heap_t *heap = check(this);
+  if (heap) {
+    heap->protect.lock();
+    for (xsh_node_t *node = heap->lfree; node; node = node->next) {
+      rtn++;
+    }
+    heap->protect.unlock();
+  }
+  return rtn;
 }
 
 //==================================================================================================
