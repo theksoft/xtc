@@ -20,6 +20,8 @@ typedef struct xsh_node_s {
 
 /**
  * @brief Structure heap (XSH)
+ * 
+ * It is exported in order to allow the allocation of the heap management structure on the stack.
  */
 typedef struct {
   xtc_heap_t interface;           /**< Generic heap interface. */

@@ -1,4 +1,4 @@
-BUILD ?= build
+BUILD ?= ./build
 LIBNAME ?= xtcheaps
 
 PKGS := xstrhp xsyshp xgnrhp

@@ -1,4 +1,4 @@
-BUILD ?= build
+BUILD ?= ./build
 LIBNAME ?= xtc
 
 PKGS := heaps objs gofs

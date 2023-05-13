@@ -1,4 +1,4 @@
-BUILD ?= build
+BUILD ?= ./build
 LIBNAME ?= xtcstrhp
 
 PKGBLD := ../$(BUILD)
@@ -37,6 +37,7 @@ tests: dirs $(LIBTGT).a $(LIBTGT)d.a
 	@echo "..... XTC STRUCTURE HEAP TEST BUILD DONE / test = $(TSTNAME) ....."
 
 examples: dirs $(LIBTGT).a $(LIBTGT)d.a
+	$(MAKE) -C examples BUILD=$(PKGBLD) LIBNAME=$(LIBNAME)
 	@echo "..... XTC STRUCTURE HEAP EXAMPLE BUILD DONE / example = $(XMPNAME) ....."
 
 # Dependencies management
@@ -71,7 +72,8 @@ $(LIBTGT)d.a: $(SRCS:%=$(OBJD)/%-g.o)
 
 clean:
 	@-$(RM) -r $(BUILD)
-	@$(MAKE) -C tests BUILD=build clean
+	@$(MAKE) -C tests clean
+	@$(MAKE) -C examples clean
 
 dirs: $(DIRS)
 

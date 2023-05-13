@@ -1,5 +1,5 @@
 BUILD ?= ./build
-LIBNAME ?= xshtest
+LIBNAME ?= xshexample
 
 # Predefined folders
 
@@ -15,17 +15,17 @@ DIRS := $(LIBD) $(BIND) $(OBJD)
 # Library and test exe path base
 
 LIBTGT := $(LIBD)/lib$(LIBNAME)
-EXETGT := $(BIND)/xtc-test-xstrhp
+EXETGT := $(BIND)/xtc-xmp-xstrhp
 
 # Source list
 
-SRCS := cu_main_xsh cu_tests
+SRCS := xmp_main_xsh xmp_static_xsh xmp_prealloc_xsh
 
 # Tool chain base flags
 
 CFLAGS += -Wall -Wextra -Werror -Wpedantic --pedantic-errors -std=c11
 CFLAGS += -I ../../xgnrhp/src -I ../src
-LDFLAGS += -fPIC -lcunit -l$(LIBNAME) -L$(LIBD)
+LDFLAGS += -fPIC -l$(LIBNAME) -L$(LIBD) -lpthread
 
 # Main target
 
@@ -62,7 +62,8 @@ $(EXETGT)-d: $(SRCS:%=$(OBJD)/%-g.o)
 # Library targets
 
 $(LIBTGT).a $(LIBTGT)d.a:
-	@$(MAKE) -C .. BUILD=./tests/$(BUILD) LIBNAME=$(LIBNAME)
+# Need generic implementation as well
+	@$(MAKE) -C .. BUILD=./examples/$(BUILD) LIBNAME=$(LIBNAME)
 
 # Other targets
 
