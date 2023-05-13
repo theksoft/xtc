@@ -126,6 +126,7 @@ static void free_invalid();
 static void free_double();
 static void free_not_allocated();
 static void free_sys();
+static void free_wrong();
 
 static test_suite_t* get_ts_free_errors() {
 
@@ -134,7 +135,8 @@ static test_suite_t* get_ts_free_errors() {
     { "Free with invalid arguments", free_invalid },
     { "Double free of a element", free_double },
     { "Free on bad element", free_not_allocated },
-    { "Free and system free", free_sys },
+    { "Free with system free", free_sys },
+    { "Free with wrong heap", free_wrong },
     { NULL, NULL }
   };
 
@@ -279,8 +281,9 @@ static int init_heap() {
 }
 
 static int cleanup_heap() {
+  void *pool = test_heap()->mem_pool;
   memset(test_heap(), 0, sizeof(xsh_heap_t));
-  free(test_heap()->mem_pool);
+  free(pool);
   return 0;
 }
 
@@ -462,6 +465,39 @@ Aborted
 #endif
 }
 
+static void free_wrong() {
+  // Declare a second heap on same structure
+  typedef struct { char buf[TEST_HEAP_STRUCT_SIZE]; } test_struct;
+  size_t length = XSH_HEAP_LENGTH(test_struct,TEST_HEAP_SIZE);
+  char* pool = malloc(length);
+  xsh_heap_t heap2;
+  memset(&heap2, 0, sizeof(xsh_heap_t));
+  xsh_init(&heap2, pool, length, sizeof(test_struct), NULL);
+  CU_ASSERT_EQUAL(xsh_free_count(&heap2), TEST_HEAP_SIZE);
+
+  void* ptr1 = xsh_alloc(test_heap(), TEST_HEAP_STRUCT_SIZE);
+  CU_ASSERT_EQUAL(xsh_free_count(test_heap()), TEST_HEAP_SIZE - 1);
+  void* ptr2 = xsh_alloc(&heap2, TEST_HEAP_STRUCT_SIZE);
+  CU_ASSERT_EQUAL(xsh_free_count(&heap2), TEST_HEAP_SIZE - 1);
+
+  xsh_free(&heap2, ptr1);
+  CU_ASSERT_EQUAL(xsh_free_count(test_heap()), TEST_HEAP_SIZE - 1);
+  CU_ASSERT_EQUAL(xsh_free_count(&heap2), TEST_HEAP_SIZE - 1);
+  xsh_free(test_heap(), ptr2);
+  CU_ASSERT_EQUAL(xsh_free_count(test_heap()), TEST_HEAP_SIZE - 1);
+  CU_ASSERT_EQUAL(xsh_free_count(&heap2), TEST_HEAP_SIZE - 1);
+
+  xsh_free(&heap2, ptr2);
+  CU_ASSERT_EQUAL(xsh_free_count(test_heap()), TEST_HEAP_SIZE - 1);
+  CU_ASSERT_EQUAL(xsh_free_count(&heap2), TEST_HEAP_SIZE);
+  xsh_free(test_heap(), ptr1);
+  CU_ASSERT_EQUAL(xsh_free_count(test_heap()), TEST_HEAP_SIZE);
+  CU_ASSERT_EQUAL(xsh_free_count(&heap2), TEST_HEAP_SIZE);
+
+  memset(&heap2, 0, sizeof(xsh_heap_t));
+  free(pool);
+}
+
 static int lock_called = 0;
 static int unlock_called = 0;
 
@@ -491,8 +527,9 @@ static int init_protected_heap() {
 
 static int cleanup_protected_heap() {
   reset_protect();
+  void *pool = test_heap()->mem_pool;
   memset(test_heap(), 0, sizeof(xsh_heap_t));
-  free(test_heap()->mem_pool);
+  free(pool);
   return 0;
 }
 
