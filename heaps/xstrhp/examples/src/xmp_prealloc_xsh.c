@@ -2,6 +2,10 @@
   This example demonstrates 3 different points:
     - Usage of a preallocated memory buffer for structure heap allocation
     - Protected structure heap
+
+  We assume the heap lives until the program ends.
+  Cleaner implmentation should take care of releasing allocated memory
+  and destroying protection mutex.
 */
 
 #define XMP_PREALLOCATED_XSH_SIZE     30
