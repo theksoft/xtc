@@ -1,7 +1,7 @@
-#ifndef _XMP_STATIC_XSH_H_
-#define _XMP_STATIC_XSH_H_
+#ifndef _XMP_XSH_STATIC_H_
+#define _XMP_XSH_STATIC_H_
 
-#include "xmp_struct_xsh.h"
+#include "xmp_xsh_struct.h"
 
 #ifndef __USE_MALLOC
 

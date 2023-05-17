@@ -11,7 +11,7 @@
 #define XMP_PREALLOCATED_XSH_SIZE     30
 
 #include "xtc_strhp.h"
-#include "xmp_prealloc_xsh.h"
+#include "xmp_xsh_prealloc.h"
 
 // Protection interface declaration with C11 built-in threading support
 // -----------------------------------------------------------------------------

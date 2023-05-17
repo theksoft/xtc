@@ -1,5 +1,5 @@
-#ifndef _XMP_STRUCT_XSH_H_
-#define _XMP_STRUCT_XSH_H_
+#ifndef _XMP_XSH_STRUCT_H_
+#define _XMP_XSH_STRUCT_H_
 
 typedef struct {
   int field1;

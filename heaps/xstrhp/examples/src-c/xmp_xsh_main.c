@@ -1,5 +1,6 @@
-#include "xmp_static_xsh.h"
-#include "xmp_prealloc_xsh.h"
+#include "xmp_xsh_static.h"
+#include "xmp_xsh_prealloc.h"
+#include <stdio.h>
 #include <assert.h>
 
 
@@ -21,6 +22,8 @@ int main() {
 
   xsh_free_s(s1);
   xsh_free_p(s2);
+
+  printf("\nExample with nothing to print - Check source code for implementation example\n\n");
 
   return 0;
 }

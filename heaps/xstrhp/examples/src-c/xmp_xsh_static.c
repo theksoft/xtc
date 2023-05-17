@@ -4,10 +4,10 @@
     - Unprotected structure heap
 */
 
-#define XMP_STATIC_XSH_SIZE     30
+#define XMP_XSH_STATIC_SIZE     30
 
 #include "xtc_strhp.h"
-#include "xmp_static_xsh.h"
+#include "xmp_xsh_static.h"
 
 // Encapsulated heap declaration
 static xsh_heap_t* heap();
@@ -27,7 +27,7 @@ static xsh_heap_t* heap() {
 
   static int initialized = 0;
   // Static memory area
-  static char memory[XSH_HEAP_LENGTH(my_struct, XMP_STATIC_XSH_SIZE)];
+  static char memory[XSH_HEAP_LENGTH(my_struct, XMP_XSH_STATIC_SIZE)];
   // Heap management structure
   static xsh_heap_t the_heap;
 
@@ -35,7 +35,7 @@ static xsh_heap_t* heap() {
     // Structure heap initialization
     xsh_init(
       &the_heap, memory,
-      XSH_HEAP_LENGTH(my_struct, XMP_STATIC_XSH_SIZE),
+      XSH_HEAP_LENGTH(my_struct, XMP_XSH_STATIC_SIZE),
       sizeof(my_struct), NULL // -> unprotected
     );
     initialized = 1;
