@@ -3,6 +3,10 @@
 
 #include <stdlib.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 // Precomputed at compilation time
 #define XTC_INT_MOD(size)             ((size) % sizeof(int))
 #define XTC_INT_MOD_COMPLEMENT(size)  (XTC_INT_MOD(size) ? sizeof(int) - XTC_INT_MOD(size) : 0)
@@ -30,5 +34,9 @@ typedef struct {
   void (*lock)();
   void (*unlock)();
 } xtc_protect_t;
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif // _XTC_GNRHP_H_

@@ -163,7 +163,7 @@ size_t xsh_free_count(xsh_heap_t *this) {
  * initial configured memory pool and if the difference between the associated node address
  * and the base memory pool address is a modulo of the node size.
  * 
- * @param this The heap to which the provided pointer ptr belongs.
+ * @param heap The heap to which the provided pointer ptr belongs.
  * @param ptr The allocated structure heap node.
  * @return
  * The function returns valid @c xsh_node_t* related to the provided pointer @c ptr
