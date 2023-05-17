@@ -3,7 +3,8 @@ LIBNAME ?= xshexample
 
 # Predefined folders
 
-SRCD := src
+SRCCD := src-c
+SRCCPPD := src-cpp
 
 # Temporary folders
 
@@ -15,49 +16,70 @@ DIRS := $(LIBD) $(BIND) $(OBJD)
 # Library and test exe path base
 
 LIBTGT := $(LIBD)/lib$(LIBNAME)
-EXETGT := $(BIND)/xtc-xmp-xstrhp
+EXETGTC := $(BIND)/xtc-xmp-xstrhp-c
+EXETGTCPP := $(BIND)/xtc-xmp-xstrhp-cpp
 
 # Source list
 
-SRCS := xmp_main_xsh xmp_static_xsh xmp_prealloc_xsh
+SRCCS := xmp_xsh_main xmp_xsh_static xmp_xsh_prealloc
+SRCCPPS := xmp_xsh_main-cpp xmp_xsh_myclass
 
 # Tool chain base flags
 
-CFLAGS += -Wall -Wextra -Werror -Wpedantic --pedantic-errors -std=c11
-CFLAGS += -I ../../xgnrhp/src -I ../src
-LDFLAGS += -fPIC -l$(LIBNAME) -L$(LIBD) -lpthread
+FLAGS = -Wall -Wextra -Werror -Wpedantic --pedantic-errors
+FLAGS += -I ../../xgnrhp/src -I ../src
+CFLAGS += $(FLAGS) -std=c11
+CXXFLAGS += $(FLAGS) -std=c++11
+LDFLAGS += -fPIC -l$(LIBNAME) -L$(LIBD)
 
 # Main target
 
-all: dirs $(LIBTGT).a $(LIBTGT)d.a $(EXETGT) $(EXETGT)-d
+all: dirs $(LIBTGT).a $(LIBTGT)d.a $(EXETGTC) $(EXETGTC)-d $(EXETGTCPP) $(EXETGTCPP)-d
 
 # Dependencies management
 
-DEPS := $(SRCS:%=$(OBJD)/%.d)
+DEPS := $(SRCCS:%=$(OBJD)/%.d) $(SRCCPPS:%=$(OBJD)/%.d)
 
-$(OBJD)/%.d: $(SRCD)/%.c | $(OBJD)
+$(OBJD)/%.d: $(SRCCD)/%.c | $(OBJD)
 	@$(CC) -MM -MP -MT $(OBJD)/$(basename $(<F)).o -MT $(OBJD)/$(basename $(<F))-g.o $(CFLAGS) $< > $@
+
+$(OBJD)/%.d: $(SRCCPPD)/%.c | $(OBJD)
+	@$(CXX) -MM -MP -MT $(OBJD)/$(basename $(<F)).o -MT $(OBJD)/$(basename $(<F))-g.o $(CXXFLAGS) $< > $@
 
 # Target specificities
 
-$(EXETGT): CFLAGS += -O2 -DNDEBUG=1
-$(EXETGT)-d: CFLAGS += -g -D__DEBUG
+$(EXETGTC): CFLAGS += -O2 -DNDEBUG=1
+$(EXETGTC)-d: CFLAGS += -g -D__DEBUG
+$(EXETGTCPP): CXXFLAGS += -O2 -DNDEBUG=1
+$(EXETGTCPP)-d: CXXFLAGS += -g -D__DEBUG
 
 # Object files build rules
 
-$(OBJD)/%.o: $(SRCD)/%.c
+$(OBJD)/%.o: $(SRCCD)/%.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
-$(OBJD)/%-g.o: $(SRCD)/%.c
+$(OBJD)/%-g.o: $(SRCCD)/%.c
 	$(CC) $(CFLAGS) -c $< -o $@
+
+$(OBJD)/%.o: $(SRCCPPD)/%.cpp
+	$(CXX) $(CXXFLAGS) -c $< -o $@
+
+$(OBJD)/%-g.o: $(SRCCPPD)/%.cpp
+	$(CXX) $(CXXFLAGS) -c $< -o $@
 
 # Executable targets
 
-$(EXETGT): $(SRCS:%=$(OBJD)/%.o)
-	$(CC) $^ $(LDFLAGS) -o $@
+$(EXETGTC): $(SRCCS:%=$(OBJD)/%.o)
+	$(CC) $^ $(LDFLAGS) -lpthread -o $@
 
-$(EXETGT)-d: $(SRCS:%=$(OBJD)/%-g.o)
-	$(CC) $^ $(LDFLAGS) -o $@
+$(EXETGTC)-d: $(SRCCS:%=$(OBJD)/%-g.o)
+	$(CC) $^ $(LDFLAGS) -lpthread -o $@
+
+$(EXETGTCPP): $(SRCCPPS:%=$(OBJD)/%.o)
+	$(CXX) $^ $(LDFLAGS) -o $@
+
+$(EXETGTCPP)-d: $(SRCCPPS:%=$(OBJD)/%-g.o)
+	$(CXX) $^ $(LDFLAGS) -o $@
 
 # Library targets
 
