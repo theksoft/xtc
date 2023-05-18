@@ -20,11 +20,14 @@ EXETGT := $(BIND)/xtc-test-xstrhp
 # Source list
 
 SRCS := cu_main_xsh cu_tests
+SRCPPS := cxx_tests
 
 # Tool chain base flags
 
-CFLAGS += -Wall -Wextra -Werror -Wpedantic --pedantic-errors -std=c11
-CFLAGS += -I ../../xgnrhp/src -I ../src
+FLAGS := -Wall -Wextra -Werror -Wpedantic --pedantic-errors
+FLAGS += -I ../../xgnrhp/src -I ../src
+CFLAGS += $(FLAGS) -std=c11
+CXXFLAGS += $(FLAGS) -std=c++11
 LDFLAGS += -fPIC -lcunit -l$(LIBNAME) -L$(LIBD)
 
 # Main target
@@ -33,15 +36,17 @@ all: dirs $(LIBTGT).a $(LIBTGT)d.a $(EXETGT) $(EXETGT)-d
 
 # Dependencies management
 
-DEPS := $(SRCS:%=$(OBJD)/%.d)
+DEPS := $(SRCS:%=$(OBJD)/%.d) $(SRCPPS:%=$(OBJD)/%.d)
 
-$(OBJD)/%.d: $(SRCD)/%.c | $(OBJD)
+$(OBJD)/%.d: $(SRCD)/%.c $(SRCD)/%.cpp | $(OBJD)
 	@$(CC) -MM -MP -MT $(OBJD)/$(basename $(<F)).o -MT $(OBJD)/$(basename $(<F))-g.o $(CFLAGS) $< > $@
 
 # Target specificities
 
 $(EXETGT): CFLAGS += -O2 -DNDEBUG=1
+$(EXETGT): CXXFLAGS += -O2 -DNDEBUG=1
 $(EXETGT)-d: CFLAGS += -g -D__DEBUG
+$(EXETGT)-d: CXXFLAGS += -g -D__DEBUG
 
 # Object files build rules
 
@@ -51,13 +56,19 @@ $(OBJD)/%.o: $(SRCD)/%.c
 $(OBJD)/%-g.o: $(SRCD)/%.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
+$(OBJD)/%.o: $(SRCD)/%.cpp
+	$(CXX) $(CXXFLAGS) -c $< -o $@
+
+$(OBJD)/%-g.o: $(SRCD)/%.cpp
+	$(CXX) $(CXXFLAGS) -c $< -o $@
+
 # Executable targets
 
-$(EXETGT): $(SRCS:%=$(OBJD)/%.o)
-	$(CC) $^ $(LDFLAGS) -o $@
+$(EXETGT): $(SRCS:%=$(OBJD)/%.o) $(SRCPPS:%=$(OBJD)/%.o)
+	$(CXX) $^ $(LDFLAGS) -o $@
 
-$(EXETGT)-d: $(SRCS:%=$(OBJD)/%-g.o)
-	$(CC) $^ $(LDFLAGS) -o $@
+$(EXETGT)-d: $(SRCS:%=$(OBJD)/%-g.o)  $(SRCPPS:%=$(OBJD)/%-g.o)
+	$(CXX) $^ $(LDFLAGS) -o $@
 
 # Library targets
 

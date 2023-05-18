@@ -1,6 +1,7 @@
 #include "cu_tests.h"
-#include "CUnit/CUnit.h"
 #include "xtc_strhp.h"
+#include "cxx_tests.h"
+#include <CUnit/CUnit.h>
 #include <stdlib.h>
 #include <assert.h>
 #include <time.h>
@@ -15,6 +16,9 @@ static test_suite_t* get_ts_free_errors();
 static test_suite_t* get_ts_protect();
 static test_suite_t* get_ts_random();
 
+static test_suite_t* get_ts_cxx_allocator();
+static test_suite_t* get_ts_cxx_protected_allocator();
+
 const test_suite_getter_t tsg_table[] = {
   get_ts_init_error,
   get_ts_init,
@@ -23,6 +27,8 @@ const test_suite_getter_t tsg_table[] = {
   get_ts_free_errors,
   get_ts_protect,
   get_ts_random,
+  get_ts_cxx_allocator,
+  get_ts_cxx_protected_allocator,
   TEST_SUITE_GETTER_END
 };
 
@@ -192,6 +198,51 @@ static test_suite_t* get_ts_random() {
     .tests = tests
   };
   
+  return &suite;
+}
+
+static test_suite_t* get_ts_cxx_allocator() {
+
+  static test_t tests[] = {
+    { "[C++] Allocate with 0 size", cxx_alloc_0_size },
+    { "[C++] Allocate with bad size", cxx_alloc_bad_size },
+    { "[C++] Simple allocation and free cycle", cxx_simple_alloc_free },
+    { "[C++] Sequential allocation and sequential free", cxx_sequential_alloc_free },
+    { "[C++] Unordered sequence of allocation and free", cxx_unordered_alloc_free },
+    { "[C++] Free with NULL arguments", cxx_free_null },
+    { "[C++] Free with invalid arguments", cxx_free_invalid },
+    { "[C++] Double free of a element", cxx_free_double },
+    { "[C++] Free on bad element", cxx_free_not_allocated },
+    { "[C++] Free with wrong allocator", cxx_free_wrong },
+    { NULL, NULL }
+  };
+
+  static test_suite_t suite = {
+    .title = "C++ Unprotected Allocator",
+    .init = cxx_init_allocator,
+    .cleanup = cxx_cleanup_allocator,
+    .tests = tests
+  };
+
+  return &suite;
+}
+
+static test_suite_t* get_ts_cxx_protected_allocator() {
+
+  static test_t tests[] = {
+    { "[C++] Simple sequence on protected structure allocator", cxx_simple_test_protect },
+    { "[C++] Multiple sequences on protected structure allocator", cxx_multiple_test_protect },
+    { "[C++] Error sequences on protected structure allocator", cxx_error_test_protect },
+    { NULL, NULL }
+  };
+
+  static test_suite_t suite = {
+    .title = "C++ Protected Allocator",
+    .init = cxx_init_protected_allocator,
+    .cleanup = cxx_cleanup_protected_allocator,
+    .tests = tests
+  };
+
   return &suite;
 }
 
