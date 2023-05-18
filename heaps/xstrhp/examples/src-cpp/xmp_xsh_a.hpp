@@ -1,14 +1,14 @@
-#ifndef _XMP_XSH_MYCLASS_HPP_
-#define _XMP_XSH_MYCLASS_HPP_
+#ifndef _XMP_XSH_A_HPP_
+#define _XMP_XSH_A_HPP_
 
 #include <new>
 
-#define MYCLASS_HEAP_SIZE   10
+#define A_HEAP_SIZE   5
 
-class MyClass {
+class A {
 public:
-  MyClass();
-  ~MyClass();
+  A();
+  ~A();
 
   void* operator new(std::size_t count);
   void operator delete(void* ptr);

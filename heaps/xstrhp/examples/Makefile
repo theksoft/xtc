@@ -22,7 +22,7 @@ EXETGTCPP := $(BIND)/xtc-xmp-xstrhp-cpp
 # Source list
 
 SRCCS := xmp_xsh_main xmp_xsh_static xmp_xsh_prealloc
-SRCCPPS := xmp_xsh_main-cpp xmp_xsh_myclass
+SRCCPPS := xmp_xsh_main-cpp xmp_xsh_a  xmp_xsh_b
 
 # Tool chain base flags
 
