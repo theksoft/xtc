@@ -19,8 +19,8 @@ EXETGT := $(BIND)/xtc-test-xstrhp
 
 # Source list
 
-SRCS := cu_main_xsh cu_tests
-SRCPPS := cxx_tests
+SRCS := cu_main cu_tests_xsh
+SRCPPS := cxx_tests_xsh
 
 # Tool chain base flags
 

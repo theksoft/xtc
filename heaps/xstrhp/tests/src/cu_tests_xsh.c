@@ -1,6 +1,6 @@
 #include "cu_tests.h"
 #include "xtc_strhp.h"
-#include "cxx_tests.h"
+#include "cxx_tests_xsh.h"
 #include <CUnit/CUnit.h>
 #include <stdlib.h>
 #include <assert.h>
