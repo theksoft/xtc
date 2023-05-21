@@ -66,7 +66,7 @@ namespace xtc {
      * generic @c void*. It retusn @c NULL if there is no more free memory space.
      */
     virtual void* allocate(size_t size) {
-      return (T*)xsh_alloc(&_heap, size);
+      return xsh_alloc(&_heap, size);
     }
 
     /**
