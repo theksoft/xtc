@@ -1,6 +1,6 @@
 #include <CUnit/CUnit.h>
 #include <cassert>
-#include "cxx_tests.h"
+#include "cxx_tests_xsh.h"
 #include "xtc_strhp.hxx"
 
 class TestClass {
