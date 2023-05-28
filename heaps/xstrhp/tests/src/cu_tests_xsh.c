@@ -648,62 +648,68 @@ static void multiple_test_protect() {
 }
 
 static void error_test_protect() {
+  int lock_calls = 0;
   reset_protect();
 
   xsh_heap_t heap;
-  CU_ASSERT_PTR_NULL(xsh_alloc(&heap, 42));
+  CU_ASSERT_PTR_NULL(xsh_alloc(&heap, 42));// lock_calls++;
   CU_ASSERT_EQUAL(lock_called, unlock_called);
-  CU_ASSERT_PTR_NULL(xsh_alloc((xsh_heap_t*)(((char*)(&heap)) + 2), 42));
+  CU_ASSERT_PTR_NULL(xsh_alloc((xsh_heap_t*)(((char*)(&heap)) + 2), 42));// lock_calls++;
   CU_ASSERT_EQUAL(lock_called, unlock_called);
-  CU_ASSERT_PTR_NULL(xsh_alloc((xsh_heap_t*)test_heap()->mem_pool, 42));
-  CU_ASSERT_EQUAL(lock_called, unlock_called);
-
-  CU_ASSERT_PTR_NULL(xsh_alloc(test_heap(), 0));
+  CU_ASSERT_PTR_NULL(xsh_alloc((xsh_heap_t*)test_heap()->mem_pool, 42));// lock_calls++;
   CU_ASSERT_EQUAL(lock_called, unlock_called);
 
-  CU_ASSERT_PTR_NULL(xsh_alloc(test_heap(), TEST_HEAP_STRUCT_SIZE - 1));
-  CU_ASSERT_EQUAL(lock_called, unlock_called);
-  CU_ASSERT_PTR_NULL(xsh_alloc(test_heap(), TEST_HEAP_STRUCT_SIZE + 1));
+  CU_ASSERT_PTR_NULL(xsh_alloc(test_heap(), 0));// lock_calls++;
   CU_ASSERT_EQUAL(lock_called, unlock_called);
 
-  xsh_free(NULL, (void*)42);
+  CU_ASSERT_PTR_NULL(xsh_alloc(test_heap(), TEST_HEAP_STRUCT_SIZE - 1));// lock_calls++;
   CU_ASSERT_EQUAL(lock_called, unlock_called);
-  xsh_free(test_heap(), NULL);
+  CU_ASSERT_PTR_NULL(xsh_alloc(test_heap(), TEST_HEAP_STRUCT_SIZE + 1));// lock_calls++;
+  CU_ASSERT_EQUAL(lock_called, unlock_called);
+
+  xsh_free(NULL, (void*)42);// lock_calls++;
+  CU_ASSERT_EQUAL(lock_called, unlock_called);
+  xsh_free(test_heap(), NULL);// lock_calls++;
   CU_ASSERT_EQUAL(lock_called, unlock_called);
 
   int bullshit;
-  xsh_free(test_heap(), &bullshit);
+  xsh_free(test_heap(), &bullshit); lock_calls++;
   CU_ASSERT_EQUAL(lock_called, unlock_called);
-  void* ptr = xsh_alloc(test_heap(), TEST_HEAP_STRUCT_SIZE);
-  xsh_free(test_heap(), (void*)((char*)ptr - 1));
+  void* ptr = xsh_alloc(test_heap(), TEST_HEAP_STRUCT_SIZE); lock_calls++;
+  xsh_free(test_heap(), (void*)((char*)ptr - 1)); lock_calls++;
   CU_ASSERT_EQUAL(lock_called, unlock_called);
-  xsh_free(test_heap(), (void*)((char*)ptr + 1));
+  xsh_free(test_heap(), (void*)((char*)ptr + 1)); lock_calls++;
   CU_ASSERT_EQUAL(lock_called, unlock_called);
-  xsh_free(test_heap(), ptr);
+  xsh_free(test_heap(), ptr); lock_calls++;
   CU_ASSERT_EQUAL(lock_called, unlock_called);
 
+  CU_ASSERT_EQUAL(lock_called, lock_calls);
+
+   lock_calls = 0;
   cleanup_protected_heap(); init_protected_heap();
-  ptr = xsh_alloc(test_heap(), TEST_HEAP_STRUCT_SIZE);
+  ptr = xsh_alloc(test_heap(), TEST_HEAP_STRUCT_SIZE); lock_calls++;
   CU_ASSERT_EQUAL(lock_called, unlock_called);
-  xsh_free(test_heap(), ptr);
+  xsh_free(test_heap(), ptr); lock_calls++;
   CU_ASSERT_EQUAL(lock_called, unlock_called);
-  xsh_free(test_heap(), ptr);
+  xsh_free(test_heap(), ptr); lock_calls++;
   CU_ASSERT_EQUAL(lock_called, unlock_called);
 
   char buf[TEST_HEAP_STRUCT_SIZE];
-  xsh_free(test_heap(), (void*)buf);
+  xsh_free(test_heap(), (void*)buf); lock_calls++;
   CU_ASSERT_EQUAL(lock_called, unlock_called);
   // Build a fake node with real data but not allocated with structure heap
   xsh_node_t *test = malloc(test_heap()->node_size);
-  ptr = xsh_alloc(test_heap(), TEST_HEAP_STRUCT_SIZE);
+  ptr = xsh_alloc(test_heap(), TEST_HEAP_STRUCT_SIZE); lock_calls++;
   CU_ASSERT_EQUAL(lock_called, unlock_called);
   xsh_node_t *node = (xsh_node_t*)ptr - 1;
   memcpy(test, node, test_heap()->node_size);
-  xsh_free(test_heap(), (void*)(test+1));
+  xsh_free(test_heap(), (void*)(test+1)); lock_calls++;
   CU_ASSERT_EQUAL(lock_called, unlock_called);
-  xsh_free(test_heap(), ptr);
+  xsh_free(test_heap(), ptr); lock_calls++;
   CU_ASSERT_EQUAL(lock_called, unlock_called);
   free(test);
+
+  CU_ASSERT_EQUAL(lock_called, lock_calls);
 
   reset_protect();
 }
