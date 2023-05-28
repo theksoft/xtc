@@ -30,7 +30,7 @@ FLAGS = -Wall -Wextra -Werror -Wpedantic --pedantic-errors
 FLAGS += -I ../../xgnrhp/src -I ../src
 CFLAGS += $(FLAGS) -std=c11
 CXXFLAGS += $(FLAGS) -std=c++11
-LDFLAGS += -fPIC -l$(LIBNAME) -L$(LIBD)
+LDFLAGS += -fPIC -L$(LIBD)
 
 # Main target
 
@@ -49,9 +49,13 @@ $(OBJD)/%.d: $(SRCCPPD)/%.c | $(OBJD)
 # Target specificities
 
 $(EXETGTC): CFLAGS += -O2 -DNDEBUG=1
+$(EXETGTC): LDFLAGS += -l$(LIBNAME)
 $(EXETGTC)-d: CFLAGS += -g -D__DEBUG
+$(EXETGTC)-d: LDFLAGS += -l$(LIBNAME)d
 $(EXETGTCPP): CXXFLAGS += -O2 -DNDEBUG=1
+$(EXETGTCPP): LDFLAGS += -l$(LIBNAME)
 $(EXETGTCPP)-d: CXXFLAGS += -g -D__DEBUG
+$(EXETGTCPP)-d: LDFLAGS += -l$(LIBNAME)d
 
 # Object files build rules
 
