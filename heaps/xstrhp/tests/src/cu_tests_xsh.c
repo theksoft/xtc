@@ -754,5 +754,5 @@ static void test_perf() {
   double avga, avgf;
   avga = (double)sa * 1e9 / CLOCKS_PER_SEC / na;
   avgf = (double)sf * 1e9 / CLOCKS_PER_SEC / nf;
-  printf("#alloc. = %.3lf ns [%d ] #free. = %.3lf ns [%d] : ...", avga, na, avgf, nf);
+  printf("#alloc. = %.3lf ns [%d] #free. = %.3lf ns [%d] : ...", avga, na, avgf, nf);
 }
