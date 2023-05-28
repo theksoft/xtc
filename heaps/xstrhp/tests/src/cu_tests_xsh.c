@@ -682,7 +682,7 @@ static void error_test_protect() {
   xsh_free(test_heap(), ptr);
   CU_ASSERT_EQUAL(lock_called, unlock_called);
 
-  cleanup_heap(); init_heap();
+  cleanup_protected_heap(); init_protected_heap();
   ptr = xsh_alloc(test_heap(), TEST_HEAP_STRUCT_SIZE);
   CU_ASSERT_EQUAL(lock_called, unlock_called);
   xsh_free(test_heap(), ptr);
