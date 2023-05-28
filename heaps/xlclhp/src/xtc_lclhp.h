@@ -40,7 +40,7 @@ typedef struct {
   size_t  count;                  /**< Count of memory blocks. */
   size_t  total_size;             /**< Total actual size. */
   size_t  max_block_size;         /**< Actual size of the largest block. */
-} xlh_stats;
+} xlh_stats_t;
 
 xtc_heap_t* xlh_init(xlh_heap_t *heap, void *mem, size_t length, xtc_protect_t *protect);
 
@@ -50,9 +50,9 @@ void xlh_free(xlh_heap_t *heap, void *ptr);
 
 size_t xlh_max_free_blk(xlh_heap_t *heap);
 
-void xlh_free_stats(xlh_heap_t *heap, xlh_stats *stats);
+void xlh_free_stats(xlh_heap_t *heap, xlh_stats_t *stats);
 
-void xlh_allocated_stats(xlh_heap_t *heap, xlh_stats *stats);
+void xlh_allocated_stats(xlh_heap_t *heap, xlh_stats_t *stats);
 
 #ifdef __cplusplus
 }

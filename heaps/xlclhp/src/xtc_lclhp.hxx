@@ -38,11 +38,11 @@ namespace xtc {
       return xlh_max_free_blk(&_heap);
     }
 
-    void freeStats(xlh_stats& stats) {
+    void freeStats(xlh_stats_t& stats) {
       xlh_free_stats(&_heap, &stats);
     }
 
-    void allocatedStats(xlh_stats& stats) {
+    void allocatedStats(xlh_stats_t& stats) {
       xlh_allocated_stats(&_heap, &stats);
     }
 

@@ -73,7 +73,7 @@ $(LIBTGT)d.a: $(SRCS:%=$(OBJD)/%-g.o)
 clean:
 	@-$(RM) -r $(BUILD)
 	@$(MAKE) -C tests clean
-	@$(MAKE) -C examples clean
+#	@$(MAKE) -C examples clean
 
 dirs: $(DIRS)
 

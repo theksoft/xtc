@@ -99,8 +99,8 @@ void* xlh_alloc(xlh_heap_t *this, size_t size) {
       if (remain) {
         insert_free_node_fwd(heap, remain, free_start);
       }
+      rtn = (void*)(node + 1);
     }
-    rtn = (void*)(node + 1);
     heap->protect.unlock();
   }
   return rtn;
@@ -111,7 +111,7 @@ void xlh_free(xlh_heap_t *this, void *ptr) {
   if (heap && ptr) {
     heap->protect.lock();
     xlh_node_t *node = get_node(heap, ptr);
-    if (node) {
+    if (node && !is_free(heap, node)) {
       xlh_free_config_t cfg;
       prepare_free_node(heap, node, &cfg);
       // Remove from free list
@@ -128,7 +128,7 @@ void xlh_free(xlh_heap_t *this, void *ptr) {
       if (cfg.is_previous_free) {
         merge_node_with_next(heap, node->blk.previous);
       }
-      // Insert in free list
+      // Insert result in free list
       if (cfg.insert_final) {
         insert_free_node_rev(heap, cfg.final, cfg.start);
       }
@@ -140,16 +140,21 @@ void xlh_free(xlh_heap_t *this, void *ptr) {
 size_t xlh_max_free_blk(xlh_heap_t *this) {
   size_t rtn = 0;
   xlh_heap_t *heap = check(this);
-  if (heap && heap->head_free) {
-    rtn = heap->head_free->size;
+  if (heap) {
+    heap->protect.lock();
+    if (heap->head_free) {
+      rtn = heap->head_free->size;
+    }
+    heap->protect.unlock();
   }
   return rtn;
 }
 
-void xlh_free_stats(xlh_heap_t *this, xlh_stats *stats) {
+void xlh_free_stats(xlh_heap_t *this, xlh_stats_t *stats) {
   xlh_heap_t *heap = check(this);
   if (stats && heap) {
-    memset(stats, 0, sizeof(xlh_stats));
+    memset(stats, 0, sizeof(xlh_stats_t));
+    heap->protect.lock();
     for (xlh_node_t *node = heap->head_free; node != NULL; node = node->free.next) {
       stats->count++;
       stats->total_size += node->size;
@@ -157,20 +162,24 @@ void xlh_free_stats(xlh_heap_t *this, xlh_stats *stats) {
     if (heap->head_free) {
       stats->max_block_size = heap->head_free->size;
     }
+    heap->protect.unlock();
   }
 }
 
-void xlh_allocated_stats(xlh_heap_t *this, xlh_stats *stats) {
+void xlh_allocated_stats(xlh_heap_t *this, xlh_stats_t *stats) {
   xlh_heap_t *heap = check(this);
   if (stats && heap) {
-    memset(stats, 0, sizeof(xlh_stats));
+    memset(stats, 0, sizeof(xlh_stats_t));
+    heap->protect.lock();
     for (xlh_node_t *node = heap->head_blks; node != NULL; node = node->blk.next) {
+      if (is_free(heap, node)) continue;
       stats->count++;
       stats->total_size += node->size;
       if (stats->max_block_size < node->size) {
         stats->max_block_size = node->size;
       }
     }
+    heap->protect.unlock();
   }
 }
 
@@ -210,7 +219,9 @@ static xlh_node_t* split_node(xlh_heap_t *heap, xlh_node_t *node, size_t size) {
     rtn = create_node(heap, (char*)(node + 1) + size, remain);
     rtn->blk.next = node->blk.next;
     rtn->blk.previous = node;
-    node->blk.next->blk.previous = rtn;
+    if (node->blk.next) {
+      node->blk.next->blk.previous = rtn;
+    }
     node->blk.next = rtn;
   }
   return rtn;
@@ -245,6 +256,7 @@ static void remove_free_node(xlh_heap_t *heap, xlh_node_t *node) {
 }
 
 static void insert_free_node_fwd(xlh_heap_t *heap, xlh_node_t *node, xlh_node_t *start) {
+  assert(!is_free(heap, node));
   xlh_node_t *tmp;
   for (tmp = start; NULL != tmp; tmp = tmp->free.next) {
     if (tmp->size <= node->size) break;
@@ -279,6 +291,16 @@ static void insert_free_node_rev(xlh_heap_t *heap, xlh_node_t *node, xlh_node_t 
   for (tmp = start; NULL != tmp; tmp = tmp->free.previous) {
     if (tmp->size >= node->size) break;
   }
+  if (is_free(heap, node)) {
+    // If node is already free, it may already be placed correctly
+    if (!tmp || tmp == node || tmp->free.next == node) {
+      assert(tmp || node == heap->head_free);
+      return;
+    } else {
+      // Must be removed before reinserted
+      remove_free_node(heap, node);
+    }
+  }
   if (tmp) {
     // insert after tmp
     node->free.next = tmp->free.next;
@@ -302,7 +324,6 @@ static void insert_free_node_rev(xlh_heap_t *heap, xlh_node_t *node, xlh_node_t 
       heap->tail_free = heap->head_free = node;
     }
   }
-  (void)heap; (void)node; (void)start;
 }
 
 static void prepare_free_node(xlh_heap_t *heap, xlh_node_t *node, xlh_free_config_t *cfg) {
@@ -331,6 +352,9 @@ static void prepare_free_node(xlh_heap_t *heap, xlh_node_t *node, xlh_free_confi
   } else {  // ((P_gt_N && final_gt_Pp) || (is_previous_free && !is_next_free))
     cfg->start = P->free.previous;
   }
+  if (cfg->start == cfg->final) {
+    cfg->start = cfg->final->free.previous;
+  }
 }
 
 static xlh_node_t* get_node(xlh_heap_t *heap, void *ptr) {
@@ -345,3 +369,27 @@ static xlh_node_t* get_node(xlh_heap_t *heap, void *ptr) {
   }
   return rtn;
 }
+
+#ifdef __DEBUG
+
+#include <stdio.h>
+
+/* Not exported / not documented */
+void xlh_dump_heap(xlh_heap_t *this) {
+  xlh_heap_t *heap = check(this);
+  size_t i; xlh_node_t *node;
+  assert(heap);
+  printf("############################################################\n");
+  printf("\tHEAP : pool %p size %08lx (%ld)\n", heap->mem_pool, heap->mem_length, heap->mem_length);
+  printf("\t  HEAP BLOCKS : blk  > %p\n", (void*)heap->head_blks);
+  printf("\t  HEAP FREE   : free > %p %p <\n", (void*)heap->head_free, (void*)heap->tail_free);
+  printf("------------------------------------------------------------\n");
+  for (i = 0, node = heap->head_blks; NULL != node && i < 100; node = node->blk.next, i++) {
+    printf("\t\tNODE[%ld] : @ %p # %08lx (%ld) @BP %p @BN %p @FP %p @FN %p\n",
+      i, (void*)node, node->size, node->size,
+      (void*)node->blk.previous, (void*)node->blk.next,
+      (void*)node->free.previous, (void*)node->free.next);
+  }
+}
+
+#endif // __DEBUG
