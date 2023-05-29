@@ -22,8 +22,8 @@ namespace xtc {
     }
 
     virtual ~Allocator() {
+      xlh_end(&_heap, NULL);
       memset(_memory, 0, Length);
-      memset(&_heap, 0, sizeof(xlh_heap_t));
     }
 
     virtual void* allocate(size_t size) {

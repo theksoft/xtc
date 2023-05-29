@@ -2,6 +2,8 @@
   This example demonstrates 3 different points:
     - Usage of a static memory buffer for local heap allocation
     - Unprotected local heap
+  We assume the heap lives until the program ends.
+  Cleaner implementation should take care of ending heap with xlh_end().
 */
 
 #define XMP_XLH_STATIC_SIZE     (1024*1024)

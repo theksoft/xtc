@@ -41,20 +41,19 @@ int main() {
 static void useA() {
 
   A* table[30];
-  bool stop = false;
   int i;
-  for (i = 0; i < 30 && !stop; i++) {
+  for (i = 0; i < 30; i++) {
     try {
       table[i] = new A();
     } catch(const std::exception& e) {
-      std::cerr << "ERROR: [iteration:" << i << "] Specific heap for A is exhausted!" << std::endl;
+      std::cerr << "ERROR: [iteration:" << i+1 << "] Specific heap for A is exhausted!" << std::endl;
       std::cerr << e.what() << std::endl;
-      stop = true;
+      break;
     }
   }
 
   int n = i;
-  for(i = 0; i < n - 1; i++) {
+  for(i = 0; i < n; i++) {
     delete table[i];
   }
 
@@ -73,20 +72,19 @@ static void useA() {
 static void useB() {
 
   B* table[30];
-  bool stop = false;
   int i;
-  for (i = 0; i < 30 && !stop; i++) {
+  for (i = 0; i < 30; i++) {
     try {
       table[i] = new B();
     } catch(const std::exception& e) {
       std::cerr << "ERROR: [iteration:" << i << "] Specific heap for B is exhausted!" << std::endl;
       std::cerr << e.what() << std::endl;
-      stop = true;
+      break;
     }
   }
 
   int n = i;
-  for(i = 0; i < n-1; i++) {
+  for(i = 0; i < n; i++) {
     delete table[i];
   }
 
@@ -121,7 +119,7 @@ static void useC() {
   }
 
   int n = i;
-  for(i = 0; i < n-1; i++) {
+  for(i = 0; i < n; i++) {
     hc.free(table[i]);
   }
 }
@@ -132,20 +130,19 @@ static void useD() {
   } D;
 
   D* table[30];
-  bool stop = false;
   int i;
-  for (i = 0; i < 30 && !stop; i++) {
+  for (i = 0; i < 30; i++) {
     try {
       table[i] = new D;
     } catch(const std::exception& e) {
       std::cerr << "ERROR: [iteration:" << i << "] Global heap is exhausted!" << std::endl;
       std::cout << e.what() << std::endl;
-      stop = true;
+      break;
     }
   }
-
+  
   int n = i;
-  for(i = 0; i < n-1; i++) {
+  for(i = 0; i < n; i++) {
     delete table[i];
   }
 }

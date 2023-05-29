@@ -3,6 +3,7 @@
 #include <stdbool.h>
 #include <string.h>
 #include <assert.h>
+#include <stdio.h>
 
 //==================================================================================================
 // Local inline functions
@@ -80,6 +81,24 @@ xtc_heap_t* xlh_init(xlh_heap_t *this, void *mem, size_t length, xtc_protect_t *
       this->protect.lock = (protect) ? protect->lock : dummy;
       this->protect.unlock = (protect) ? protect->unlock : dummy;
       rtn = &this->interface;
+    }
+  }
+  return rtn;
+}
+
+void* xlh_end(xlh_heap_t *this, xlh_stats_t *stats) {
+  void *rtn = NULL;
+  xlh_stats_t tmp, *s = (stats) ? stats : &tmp;  
+  xlh_allocated_stats(this, s);
+  xlh_heap_t *heap = check(this);
+  if (heap) {
+    xtc_protect_t protect = heap->protect;
+    protect.lock();
+    rtn = heap->mem_pool;
+    memset(heap, 0, sizeof(xlh_heap_t));
+    protect.unlock();
+    if (s->count) {
+      fprintf(stderr, "WARNING: %ld memory leak(s) detected when ending heap!\n", s->count);
     }
   }
   return rtn;

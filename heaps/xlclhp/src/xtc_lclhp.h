@@ -44,6 +44,8 @@ typedef struct {
 
 xtc_heap_t* xlh_init(xlh_heap_t *heap, void *mem, size_t length, xtc_protect_t *protect);
 
+void* xlh_end(xlh_heap_t *heap, xlh_stats_t *stats);
+
 void* xlh_alloc(xlh_heap_t *heap, size_t size);
 
 void xlh_free(xlh_heap_t *heap, void *ptr);
