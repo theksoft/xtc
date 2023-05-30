@@ -54,7 +54,6 @@ static test_suite_t* get_ts_init_end_error() {
     { "Init with bad heap / mem parameters", init_error_heap_mem },
     { "Init with bad pool or struct size parameters", init_error_sizes },
     { "Init with bad protect parameter", init_error_protect },
-    { "Init with bad protect parameter", init_error_protect },
     { "End with bad heap parameter", end_error },
     { NULL, NULL }
   };
@@ -1446,7 +1445,6 @@ static void end_none() {
   CU_ASSERT_PTR_EQUAL(xlh_end(&heap, NULL), pool);
   CU_ASSERT_EQUAL(0, memcmp(&heap, &ref0, sizeof(xlh_heap_t)));
 
-  memset(&heap, 0, sizeof(xlh_heap_t));
   CU_ASSERT_PTR_NOT_NULL(xlh_init(&heap, &pool, length, NULL));
   ptr[0] = xlh_alloc(&heap, 200);
   ptr[1] = xlh_alloc(&heap, 50000);
@@ -1487,7 +1485,6 @@ static void end_remain() {
   CU_ASSERT_PTR_EQUAL(xlh_end(&heap, NULL), pool);
   CU_ASSERT_EQUAL(0, memcmp(&heap, &ref0, sizeof(xlh_heap_t)));
 
-  memset(&heap, 0, sizeof(xlh_heap_t));
   CU_ASSERT_PTR_NOT_NULL(xlh_init(&heap, &pool, length, NULL));
   ptr[0] = xlh_alloc(&heap, 200);
   ptr[1] = xlh_alloc(&heap, 50000);
