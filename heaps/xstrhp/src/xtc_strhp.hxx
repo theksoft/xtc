@@ -47,8 +47,8 @@ namespace xtc {
      * as well as the wrapped C structure heap (reset).
      */
     virtual ~Allocator() {
+      xsh_end(&_heap, NULL);
       memset(_memory, 0, XSH_HEAP_LENGTH(T, Count));
-      memset(&_heap, 0, sizeof(xsh_heap_t));
     }
 
     /**

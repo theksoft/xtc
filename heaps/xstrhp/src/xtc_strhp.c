@@ -1,6 +1,9 @@
 #include "xtc_strhp.h"
 #include <stdint.h>
+#include <string.h>
 #include <assert.h>
+#include <stdio.h>
+
 
 //==================================================================================================
 // Local inline functions
@@ -81,6 +84,7 @@ xtc_heap_t* xsh_init(xsh_heap_t *this, void *mem, size_t length, size_t size, xt
   size_t node_size = XTC_ALIGNED_SIZE(size) + sizeof(xsh_node_t);
   if (this && mem && size && node_size <= length) {
     if (!protect || (protect->lock && protect->unlock)) {
+      memset(mem, 0, length);
       this->interface.id = get_id();
       this->interface.alloc = (xtc_alloc_t)xsh_alloc;
       this->interface.free = (xtc_free_t)xsh_free;
@@ -104,6 +108,27 @@ xtc_heap_t* xsh_init(xsh_heap_t *this, void *mem, size_t length, size_t size, xt
       this->protect.lock = (protect) ? protect->lock : dummy;
       this->protect.unlock = (protect) ? protect->unlock : dummy;
       rtn = &this->interface;
+    }
+  }
+  return rtn;
+}
+
+void* xsh_end(xsh_heap_t *this, size_t *count) {
+  void *rtn = NULL;
+  xsh_heap_t *heap = check(this);
+  size_t free_count = xsh_free_count(this), tmp = 0, *cnt;
+  cnt = (count) ? count : &tmp;
+  *cnt = 0;
+  if (heap) {
+    xtc_protect_t protect = heap->protect;
+    protect.lock();
+    assert((heap->mem_length / heap->node_size) >= free_count);
+    *cnt = (heap->mem_length / heap->node_size) - free_count;
+    rtn = heap->mem_pool;
+    memset(heap, 0, sizeof(xsh_heap_t));
+    protect.unlock();
+    if (*cnt) {
+      fprintf(stderr, "WARNING: %ld memory leak(s) detected when ending heap!\n", *cnt);
     }
   }
   return rtn;

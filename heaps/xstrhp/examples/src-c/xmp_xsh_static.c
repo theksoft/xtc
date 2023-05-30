@@ -2,6 +2,8 @@
   This example demonstrates 3 different points:
     - Usage of a static memory buffer for structure heap allocation
     - Unprotected structure heap
+  We assume the heap lives until the program ends.
+  Cleaner implementation should take care of ending heap with xsh_end().
 */
 
 #define XMP_XSH_STATIC_SIZE     30

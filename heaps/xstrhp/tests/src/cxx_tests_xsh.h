@@ -1,6 +1,8 @@
 #ifndef _CXX_TESTS_H_
 #define _CXX_TESTS_H_
 
+// No tests associated to xsh_end() as it is wrapped in the allocator
+
 #ifdef __cplusplus
 extern "C" {
 #endif
