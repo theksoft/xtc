@@ -34,6 +34,7 @@ typedef struct {
   xlh_node_t *head_blks;          /**< Head of the list of memory blocks. */
   xlh_node_t *head_free;          /**< Head of the list of free nodes. */
   xlh_node_t *tail_free;          /**< Tail of the list of free nodes. */
+  size_t count;                   /**< Count of allocated blocks. */
 } xlh_heap_t;
 
 typedef struct {
@@ -49,6 +50,8 @@ void* xlh_end(xlh_heap_t *heap, xlh_stats_t *stats);
 void* xlh_alloc(xlh_heap_t *heap, size_t size);
 
 void xlh_free(xlh_heap_t *heap, void *ptr);
+
+size_t xlh_count(xlh_heap_t *heap);
 
 size_t xlh_max_free_blk(xlh_heap_t *heap);
 

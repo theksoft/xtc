@@ -69,6 +69,10 @@ namespace xtc {
       return xsh_alloc(&_heap, size);
     }
 
+    virtual size_t count() {
+      return 0;
+    }
+  
     /**
      * @brief Free a memory block previously allocated.
      * 

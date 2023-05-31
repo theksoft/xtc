@@ -34,6 +34,10 @@ namespace xtc {
       xlh_free(&_heap, ptr);
     }
 
+    virtual size_t count() {
+      return xlh_count(&_heap);
+    }
+
     size_t maxFreeBlk() {
       return xlh_max_free_blk(&_heap);
     }

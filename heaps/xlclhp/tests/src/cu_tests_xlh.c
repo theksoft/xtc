@@ -1757,7 +1757,9 @@ static void test_perf() {
       printf("\r ===== %03d%% : ", last);
     }
     int id = rand() % n;
+    size_t count = 0;
     if (arr[id]) {
+      count = xlh_count(test_heap());
       xlh_free_stats(test_heap(), &stats);
       size_t total = stats.total_size;
       clock_t start = clock();
@@ -1765,9 +1767,11 @@ static void test_perf() {
       sf += clock() - start;
       arr[id] = NULL;
       nf++;
+      CU_ASSERT_EQUAL(xlh_count(test_heap()), count - 1);
       xlh_free_stats(test_heap(), &stats);
       CU_ASSERT(stats.total_size > total);
     } else {
+      count = xlh_count(test_heap());
       double max = xlh_max_free_blk(test_heap());
       size_t size_to_alloc = (size_t)(max * ((double)rand() / (double)RAND_MAX));
       if (size_to_alloc > max) {
@@ -1779,6 +1783,7 @@ static void test_perf() {
         sa += clock() - start;
         na++;
         CU_ASSERT_PTR_NOT_NULL(arr[id]);
+        CU_ASSERT_EQUAL(xlh_count(test_heap()), count + 1);
       }
     }
   }

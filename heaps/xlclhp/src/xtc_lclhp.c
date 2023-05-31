@@ -45,6 +45,7 @@ typedef struct {
   bool rm_next, rm_previous, insert_final;
 } xlh_free_config_t;
 
+static void* end(xlh_heap_t *this, size_t *count);
 static xlh_node_t* create_node(xlh_heap_t *heap, void* start, size_t length);
 static size_t destroy_node(xlh_heap_t *heap, xlh_node_t *node);
 static xlh_node_t* find_fitting_node(xlh_heap_t *heap, size_t size);
@@ -63,6 +64,13 @@ static void dummy() {}
 // Interface functions
 //==================================================================================================
 
+static void* end(xlh_heap_t *this, size_t *count) {
+  if (count) {
+    *count = xlh_count(this);
+  }
+  return xlh_end(this, NULL);
+}
+
 xtc_heap_t* xlh_init(xlh_heap_t *this, void *mem, size_t length, xtc_protect_t *protect) {
   check_node_size();
   xtc_heap_t *rtn = NULL;
@@ -72,12 +80,15 @@ xtc_heap_t* xlh_init(xlh_heap_t *this, void *mem, size_t length, xtc_protect_t *
       this->interface.id = get_id();
       this->interface.alloc = (xtc_alloc_t)xlh_alloc;
       this->interface.free = (xtc_free_t)xlh_free;
+      this->interface.count = (xtc_count_t)xlh_count;
+      this->interface.end = (xtc_end_t)end;
       this->mem_pool = mem;
       this->mem_length = length;
       this->node_offset = sizeof(xlh_node_t);
       this->head_blks = create_node(this, mem, length);
       this->head_free = this->head_blks;
       this->tail_free = this->head_blks;
+      this->count = 0;
       this->protect.lock = (protect) ? protect->lock : dummy;
       this->protect.unlock = (protect) ? protect->unlock : dummy;
       rtn = &this->interface;
@@ -119,6 +130,7 @@ void* xlh_alloc(xlh_heap_t *this, size_t size) {
         insert_free_node_fwd(heap, remain, free_start);
       }
       rtn = (void*)(node + 1);
+      heap->count++;
     }
     heap->protect.unlock();
   }
@@ -131,6 +143,7 @@ void xlh_free(xlh_heap_t *this, void *ptr) {
     heap->protect.lock();
     xlh_node_t *node = get_node(heap, ptr);
     if (node && !is_free(heap, node)) {
+      assert(heap->count > 0);
       xlh_free_config_t cfg;
       prepare_free_node(heap, node, &cfg);
       // Remove from free list
@@ -151,9 +164,21 @@ void xlh_free(xlh_heap_t *this, void *ptr) {
       if (cfg.insert_final) {
         insert_free_node_rev(heap, cfg.final, cfg.start);
       }
+      heap->count--;
     }
     heap->protect.unlock();
   }
+}
+
+size_t xlh_count(xlh_heap_t *this) {
+  size_t rtn = 0;
+  xlh_heap_t *heap = check(this);
+  if (heap) {
+    heap->protect.lock();
+    rtn = heap->count;
+    heap->protect.unlock();
+  }
+  return rtn;
 }
 
 size_t xlh_max_free_blk(xlh_heap_t *this) {
@@ -198,6 +223,7 @@ void xlh_allocated_stats(xlh_heap_t *this, xlh_stats_t *stats) {
         stats->max_block_size = node->size;
       }
     }
+    assert(stats->count == heap->count);
     heap->protect.unlock();
   }
 }
@@ -400,7 +426,7 @@ void xlh_dump_heap(xlh_heap_t *this) {
   assert(heap);
   printf("############################################################\n");
   printf("\tHEAP : pool %p size %08lx (%ld)\n", heap->mem_pool, heap->mem_length, heap->mem_length);
-  printf("\t  HEAP BLOCKS : blk  > %p\n", (void*)heap->head_blks);
+  printf("\t  HEAP BLOCKS : blk  > %p (%ld)\n", (void*)heap->head_blks, heap->count);
   printf("\t  HEAP FREE   : free > %p %p <\n", (void*)heap->head_free, (void*)heap->tail_free);
   printf("------------------------------------------------------------\n");
   for (i = 0, node = heap->head_blks; NULL != node && i < 100; node = node->blk.next, i++) {
