@@ -47,8 +47,8 @@ namespace xtc {
      * as well as the wrapped C structure heap (reset).
      */
     virtual ~Allocator() {
+      xsh_end(&_heap, NULL);
       memset(_memory, 0, XSH_HEAP_LENGTH(T, Count));
-      memset(&_heap, 0, sizeof(xsh_heap_t));
     }
 
     /**
@@ -109,6 +109,18 @@ namespace xtc {
      */
     void free(T* ptr) {
       free((void*)ptr);
+    }
+
+    /**
+     * @brief Get the count of allocated blocks.
+     * 
+     * This method directly wraps to the C structure heap count function.
+     * 
+     * @return
+     * This method returns the count of allocated memory blocks as @c size_t.
+     */
+    virtual size_t count() {
+      return xsh_count(&_heap);
     }
 
     /**

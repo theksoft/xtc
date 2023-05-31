@@ -8,11 +8,12 @@
 
 #define TEST_PERFORMANCE_ROUND    10000000
 
-static test_suite_t* get_ts_init_error();
-static test_suite_t* get_ts_init();
+static test_suite_t* get_ts_init_end_error();
+static test_suite_t* get_ts_init_end();
 static test_suite_t* get_ts_allocation_errors();
 static test_suite_t* get_ts_operational();
 static test_suite_t* get_ts_free_errors();
+static test_suite_t* get_ts_end();
 static test_suite_t* get_ts_protect();
 static test_suite_t* get_ts_random();
 
@@ -20,11 +21,12 @@ static test_suite_t* get_ts_cxx_allocator();
 static test_suite_t* get_ts_cxx_protected_allocator();
 
 const test_suite_getter_t tsg_table[] = {
-  get_ts_init_error,
-  get_ts_init,
+  get_ts_init_end_error,
+  get_ts_init_end,
   get_ts_allocation_errors,
   get_ts_operational,
   get_ts_free_errors,
+  get_ts_end,
   get_ts_protect,
   get_ts_random,
   get_ts_cxx_allocator,
@@ -35,13 +37,15 @@ const test_suite_getter_t tsg_table[] = {
 static void init_error_heap_mem();
 static void init_error_sizes();
 static void init_error_protect();
+static void end_error();
 
-static test_suite_t* get_ts_init_error() {
+static test_suite_t* get_ts_init_end_error() {
 
   static test_t tests[] = {
-    { "Bad heap / mem parameters", init_error_heap_mem },
-    { "Bad pool or struct size parameters", init_error_sizes },
-    { "Bad protect parameter", init_error_protect },
+    { "Init with bad heap / mem parameters", init_error_heap_mem },
+    { "Init with bad pool or struct size parameters", init_error_sizes },
+    { "Init with bad protect parameter", init_error_protect },
+    { "End with bad heap parameter", end_error },
     { NULL, NULL }
   };
 
@@ -58,7 +62,7 @@ static test_suite_t* get_ts_init_error() {
 static void init_static();
 static void init_dynamic();
 
-static test_suite_t* get_ts_init() {
+static test_suite_t* get_ts_init_end() {
 
   static test_t tests[] = {
     { "Static initializations", init_static },
@@ -156,12 +160,34 @@ static test_suite_t* get_ts_free_errors() {
   return &suite;
 }
 
+static void end_none();
+static void end_remain();
+
+static test_suite_t* get_ts_end() {
+
+  static test_t tests[] = {
+    { "End with no remaining blocks", end_none },
+    { "End with remaining blocks", end_remain },
+    { NULL, NULL }
+  };
+
+  static test_suite_t suite = {
+    .title = "Heap end",
+    .init = NULL,
+    .cleanup = NULL,
+    .tests = tests
+  };
+
+  return &suite;
+}
+
 static int init_protected_heap();
 static int cleanup_protected_heap();
 
 static void simple_test_protect();
 static void multiple_test_protect();
 static void error_test_protect();
+static void end_test_protect();
 
 static test_suite_t* get_ts_protect() {
 
@@ -169,6 +195,7 @@ static test_suite_t* get_ts_protect() {
     { "Simple sequence on protected structure heap", simple_test_protect },
     { "Multiple sequences on protected structure heap", multiple_test_protect },
     { "Error sequences on protected structure heap", error_test_protect },
+    { "Ending protected heap", end_test_protect },
     { NULL, NULL }
   };
 
@@ -285,32 +312,57 @@ static void init_error_protect() {
   CU_ASSERT_PTR_NULL(xsh_init(&heap, &pool, 512, 10, &guard));
 }
 
+static void end_error() {
+  xsh_heap_t heap;
+  size_t count;
+  CU_ASSERT_PTR_NULL(xsh_end(NULL, NULL));
+  CU_ASSERT_PTR_NULL(xsh_end(NULL, &count));
+  CU_ASSERT_PTR_NULL(xsh_end(&heap, &count));
+  CU_ASSERT_PTR_NULL(xsh_end(&heap, NULL));
+}
+
 static void init_static() {
   typedef struct { char buf[10]; } test_struct;
   size_t length = XSH_HEAP_LENGTH(test_struct,42);
   char pool[length];
-  xsh_heap_t heap;
+  xsh_heap_t heap, ref0;
   xtc_protect_t guard = { .lock = dummy, .unlock = dummy };
+  memset(&ref0, 0, sizeof(xsh_heap_t));
+
   memset(&heap, 0, sizeof(xsh_heap_t));
   CU_ASSERT_PTR_NOT_NULL(xsh_init(&heap, &pool, length, sizeof(test_struct), &guard));
   CU_ASSERT_EQUAL(xsh_free_count(&heap), 42);
-  memset(&heap, 0, sizeof(xsh_heap_t));
+  CU_ASSERT_PTR_EQUAL(xsh_end(&heap, NULL), pool);
+  CU_ASSERT_EQUAL(0, memcmp(&heap, &ref0, sizeof(xsh_heap_t)));
+
+  size_t count = 42;
   CU_ASSERT_PTR_NOT_NULL(xsh_init(&heap, &pool, length, sizeof(test_struct), NULL));
   CU_ASSERT_EQUAL(xsh_free_count(&heap), 42);
+  CU_ASSERT_PTR_EQUAL(xsh_end(&heap, &count), pool);
+  CU_ASSERT_EQUAL(count, 0);
+  CU_ASSERT_EQUAL(0, memcmp(&heap, &ref0, sizeof(xsh_heap_t)));
 }
 
 static void init_dynamic() {
   typedef struct { char buf[10]; } test_struct;
   size_t length = XSH_HEAP_LENGTH(test_struct,51);
   char *pool = (char*)malloc(length);
-  xsh_heap_t heap;
+  xsh_heap_t heap, ref0;
   xtc_protect_t guard = { .lock = dummy, .unlock = dummy };
+  memset(&ref0, 0, sizeof(xsh_heap_t));
+
   memset(&heap, 0, sizeof(xsh_heap_t));
   CU_ASSERT_PTR_NOT_NULL(xsh_init(&heap, pool, length, sizeof(test_struct), &guard));
   CU_ASSERT_EQUAL(xsh_free_count(&heap), 51);
-  memset(&heap, 0, sizeof(xsh_heap_t));
+  CU_ASSERT_PTR_EQUAL(xsh_end(&heap, NULL), pool);
+  CU_ASSERT_EQUAL(0, memcmp(&heap, &ref0, sizeof(xsh_heap_t)));
+
+  size_t count = 42;
   CU_ASSERT_PTR_NOT_NULL(xsh_init(&heap, pool, length, sizeof(test_struct), NULL));
   CU_ASSERT_EQUAL(xsh_free_count(&heap), 51);
+  CU_ASSERT_PTR_EQUAL(xsh_end(&heap, &count), pool);
+  CU_ASSERT_EQUAL(count, 0);
+  CU_ASSERT_EQUAL(0, memcmp(&heap, &ref0, sizeof(xsh_heap_t)));
   free(pool);
 }
 
@@ -332,8 +384,9 @@ static int init_heap() {
 }
 
 static int cleanup_heap() {
-  void *pool = test_heap()->mem_pool;
-  memset(test_heap(), 0, sizeof(xsh_heap_t));
+  size_t count;
+  void *pool = xsh_end(test_heap(), &count);
+  assert(!count);
   free(pool);
   return 0;
 }
@@ -549,6 +602,80 @@ static void free_wrong() {
   free(pool);
 }
 
+static void end_none() {
+  typedef struct { char buf[TEST_HEAP_STRUCT_SIZE]; } test_struct;
+  size_t length = XSH_HEAP_LENGTH(test_struct, TEST_HEAP_SIZE);
+  char pool[length];
+  xsh_heap_t heap, ref0;
+  size_t count;
+  memset(&ref0, 0, sizeof(xsh_heap_t));
+  void* ptr[3];
+
+  memset(&heap, 0, sizeof(xsh_heap_t));
+  CU_ASSERT_PTR_NOT_NULL(xsh_init(&heap, &pool, length, sizeof(test_struct), NULL));
+  ptr[0] = xsh_alloc(&heap, sizeof(test_struct));
+  ptr[1] = xsh_alloc(&heap, sizeof(test_struct));
+  ptr[2] = xsh_alloc(&heap, sizeof(test_struct));
+  CU_ASSERT_PTR_NOT_NULL(ptr[0]);
+  CU_ASSERT_PTR_NOT_NULL(ptr[1]);
+  CU_ASSERT_PTR_NOT_NULL(ptr[2]);
+  xsh_free(&heap, ptr[1]);
+  xsh_free(&heap, ptr[0]);
+  xsh_free(&heap, ptr[2]);
+  CU_ASSERT_EQUAL(xsh_free_count(&heap), TEST_HEAP_SIZE);
+  CU_ASSERT_PTR_EQUAL(xsh_end(&heap, NULL), pool);
+  CU_ASSERT_EQUAL(0, memcmp(&heap, &ref0, sizeof(xsh_heap_t)));
+
+  CU_ASSERT_PTR_NOT_NULL(xsh_init(&heap, &pool, length, sizeof(test_struct), NULL));
+  ptr[0] = xsh_alloc(&heap, sizeof(test_struct));
+  ptr[1] = xsh_alloc(&heap, sizeof(test_struct));
+  ptr[2] = xsh_alloc(&heap, sizeof(test_struct));
+  CU_ASSERT_PTR_NOT_NULL(ptr[0]);
+  CU_ASSERT_PTR_NOT_NULL(ptr[1]);
+  CU_ASSERT_PTR_NOT_NULL(ptr[2]);
+  xsh_free(&heap, ptr[1]);
+  xsh_free(&heap, ptr[0]);
+  xsh_free(&heap, ptr[2]);
+  CU_ASSERT_EQUAL(xsh_free_count(&heap), TEST_HEAP_SIZE);
+  CU_ASSERT_PTR_EQUAL(xsh_end(&heap, &count), pool);
+  CU_ASSERT_EQUAL(0, memcmp(&heap, &ref0, sizeof(xsh_heap_t)));
+  CU_ASSERT_EQUAL(count, 0);
+}
+
+static void end_remain() {
+  typedef struct { char buf[TEST_HEAP_STRUCT_SIZE]; } test_struct;
+  size_t length = XSH_HEAP_LENGTH(test_struct, TEST_HEAP_SIZE);
+  char pool[length];
+  xsh_heap_t heap, ref0;
+  size_t count;
+  memset(&ref0, 0, sizeof(xsh_heap_t));
+  void* ptr[3];
+
+  memset(&heap, 0, sizeof(xsh_heap_t));
+  CU_ASSERT_PTR_NOT_NULL(xsh_init(&heap, &pool, length, sizeof(test_struct), NULL));
+  ptr[0] = xsh_alloc(&heap, sizeof(test_struct));
+  ptr[1] = xsh_alloc(&heap, sizeof(test_struct));
+  ptr[2] = xsh_alloc(&heap, sizeof(test_struct));
+  CU_ASSERT_PTR_NOT_NULL(ptr[0]);
+  CU_ASSERT_PTR_NOT_NULL(ptr[1]);
+  CU_ASSERT_PTR_NOT_NULL(ptr[2]);
+  CU_ASSERT_PTR_EQUAL(xsh_end(&heap, NULL), pool);
+  CU_ASSERT_EQUAL(0, memcmp(&heap, &ref0, sizeof(xsh_heap_t)));
+
+  CU_ASSERT_PTR_NOT_NULL(xsh_init(&heap, &pool, length, sizeof(test_struct), NULL));
+  ptr[0] = xsh_alloc(&heap, sizeof(test_struct));
+  ptr[1] = xsh_alloc(&heap, sizeof(test_struct));
+  ptr[2] = xsh_alloc(&heap, sizeof(test_struct));
+  CU_ASSERT_PTR_NOT_NULL(ptr[0]);
+  CU_ASSERT_PTR_NOT_NULL(ptr[1]);
+  CU_ASSERT_PTR_NOT_NULL(ptr[2]);
+  xsh_free(&heap, ptr[1]);
+  CU_ASSERT_EQUAL(xsh_free_count(&heap), TEST_HEAP_SIZE - 2);
+  CU_ASSERT_PTR_EQUAL(xsh_end(&heap, &count), pool);
+  CU_ASSERT_EQUAL(0, memcmp(&heap, &ref0, sizeof(xsh_heap_t)));
+  CU_ASSERT_EQUAL(count, 2);
+}
+
 static int lock_called = 0;
 static int unlock_called = 0;
 
@@ -578,8 +705,9 @@ static int init_protected_heap() {
 
 static int cleanup_protected_heap() {
   reset_protect();
-  void *pool = test_heap()->mem_pool;
-  memset(test_heap(), 0, sizeof(xsh_heap_t));
+  size_t count;
+  void *pool = xsh_end(test_heap(), &count);
+  assert(!count);
   free(pool);
   return 0;
 }
@@ -648,64 +776,93 @@ static void multiple_test_protect() {
 }
 
 static void error_test_protect() {
+  int lock_calls = 0;
   reset_protect();
 
   xsh_heap_t heap;
-  CU_ASSERT_PTR_NULL(xsh_alloc(&heap, 42));
+  CU_ASSERT_PTR_NULL(xsh_alloc(&heap, 42));// lock_calls++;
   CU_ASSERT_EQUAL(lock_called, unlock_called);
-  CU_ASSERT_PTR_NULL(xsh_alloc((xsh_heap_t*)(((char*)(&heap)) + 2), 42));
+  CU_ASSERT_PTR_NULL(xsh_alloc((xsh_heap_t*)(((char*)(&heap)) + 2), 42));// lock_calls++;
   CU_ASSERT_EQUAL(lock_called, unlock_called);
-  CU_ASSERT_PTR_NULL(xsh_alloc((xsh_heap_t*)test_heap()->mem_pool, 42));
-  CU_ASSERT_EQUAL(lock_called, unlock_called);
-
-  CU_ASSERT_PTR_NULL(xsh_alloc(test_heap(), 0));
+  CU_ASSERT_PTR_NULL(xsh_alloc((xsh_heap_t*)test_heap()->mem_pool, 42));// lock_calls++;
   CU_ASSERT_EQUAL(lock_called, unlock_called);
 
-  CU_ASSERT_PTR_NULL(xsh_alloc(test_heap(), TEST_HEAP_STRUCT_SIZE - 1));
-  CU_ASSERT_EQUAL(lock_called, unlock_called);
-  CU_ASSERT_PTR_NULL(xsh_alloc(test_heap(), TEST_HEAP_STRUCT_SIZE + 1));
+  CU_ASSERT_PTR_NULL(xsh_alloc(test_heap(), 0));// lock_calls++;
   CU_ASSERT_EQUAL(lock_called, unlock_called);
 
-  xsh_free(NULL, (void*)42);
+  CU_ASSERT_PTR_NULL(xsh_alloc(test_heap(), TEST_HEAP_STRUCT_SIZE - 1));// lock_calls++;
   CU_ASSERT_EQUAL(lock_called, unlock_called);
-  xsh_free(test_heap(), NULL);
+  CU_ASSERT_PTR_NULL(xsh_alloc(test_heap(), TEST_HEAP_STRUCT_SIZE + 1));// lock_calls++;
+  CU_ASSERT_EQUAL(lock_called, unlock_called);
+
+  xsh_free(NULL, (void*)42);// lock_calls++;
+  CU_ASSERT_EQUAL(lock_called, unlock_called);
+  xsh_free(test_heap(), NULL);// lock_calls++;
   CU_ASSERT_EQUAL(lock_called, unlock_called);
 
   int bullshit;
-  xsh_free(test_heap(), &bullshit);
+  xsh_free(test_heap(), &bullshit); lock_calls++;
   CU_ASSERT_EQUAL(lock_called, unlock_called);
-  void* ptr = xsh_alloc(test_heap(), TEST_HEAP_STRUCT_SIZE);
-  xsh_free(test_heap(), (void*)((char*)ptr - 1));
+  void* ptr = xsh_alloc(test_heap(), TEST_HEAP_STRUCT_SIZE); lock_calls++;
+  xsh_free(test_heap(), (void*)((char*)ptr - 1)); lock_calls++;
   CU_ASSERT_EQUAL(lock_called, unlock_called);
-  xsh_free(test_heap(), (void*)((char*)ptr + 1));
+  xsh_free(test_heap(), (void*)((char*)ptr + 1)); lock_calls++;
   CU_ASSERT_EQUAL(lock_called, unlock_called);
-  xsh_free(test_heap(), ptr);
+  xsh_free(test_heap(), ptr); lock_calls++;
   CU_ASSERT_EQUAL(lock_called, unlock_called);
 
-  cleanup_heap(); init_heap();
-  ptr = xsh_alloc(test_heap(), TEST_HEAP_STRUCT_SIZE);
+  CU_ASSERT_EQUAL(lock_called, lock_calls);
+
+   lock_calls = 0;
+  cleanup_protected_heap(); init_protected_heap();
+  ptr = xsh_alloc(test_heap(), TEST_HEAP_STRUCT_SIZE); lock_calls++;
   CU_ASSERT_EQUAL(lock_called, unlock_called);
-  xsh_free(test_heap(), ptr);
+  xsh_free(test_heap(), ptr); lock_calls++;
   CU_ASSERT_EQUAL(lock_called, unlock_called);
-  xsh_free(test_heap(), ptr);
+  xsh_free(test_heap(), ptr); lock_calls++;
   CU_ASSERT_EQUAL(lock_called, unlock_called);
 
   char buf[TEST_HEAP_STRUCT_SIZE];
-  xsh_free(test_heap(), (void*)buf);
+  xsh_free(test_heap(), (void*)buf); lock_calls++;
   CU_ASSERT_EQUAL(lock_called, unlock_called);
   // Build a fake node with real data but not allocated with structure heap
   xsh_node_t *test = malloc(test_heap()->node_size);
-  ptr = xsh_alloc(test_heap(), TEST_HEAP_STRUCT_SIZE);
+  ptr = xsh_alloc(test_heap(), TEST_HEAP_STRUCT_SIZE); lock_calls++;
   CU_ASSERT_EQUAL(lock_called, unlock_called);
   xsh_node_t *node = (xsh_node_t*)ptr - 1;
   memcpy(test, node, test_heap()->node_size);
-  xsh_free(test_heap(), (void*)(test+1));
+  xsh_free(test_heap(), (void*)(test+1)); lock_calls++;
   CU_ASSERT_EQUAL(lock_called, unlock_called);
-  xsh_free(test_heap(), ptr);
+  xsh_free(test_heap(), ptr); lock_calls++;
   CU_ASSERT_EQUAL(lock_called, unlock_called);
   free(test);
 
+  CU_ASSERT_EQUAL(lock_called, lock_calls);
+
   reset_protect();
+}
+
+static void end_test_protect() {
+  xsh_heap_t ref0;
+  memset(&ref0, 0, sizeof(xsh_heap_t));
+
+  void* pool = test_heap()->mem_pool;
+  CU_ASSERT_PTR_EQUAL(xsh_end(test_heap(), NULL), pool);
+  free(pool);
+  CU_ASSERT_EQUAL(lock_called, 1);
+  CU_ASSERT_EQUAL(unlock_called, lock_called);
+  CU_ASSERT_EQUAL(0, memcmp(test_heap(), &ref0, sizeof(xsh_heap_t)));
+
+  size_t count;
+  init_protected_heap();
+  pool = test_heap()->mem_pool;
+  CU_ASSERT_PTR_EQUAL(xsh_end(test_heap(), &count), pool);
+  free(pool);
+  CU_ASSERT_EQUAL(lock_called, 1);
+  CU_ASSERT_EQUAL(unlock_called, lock_called);
+  CU_ASSERT_EQUAL(0, memcmp(test_heap(), &ref0, sizeof(xsh_heap_t)));
+
+  init_protected_heap();  // so that cleanup works
 }
 
 static void test_perf() {
@@ -723,20 +880,25 @@ static void test_perf() {
       printf("\r ===== %03d%% : ", last);
     }
     int id = rand() % TEST_HEAP_SIZE;
+    size_t count = 0;
     if (arr[id]) {
-      size_t count = xsh_free_count(test_heap());
+      count = xsh_count(test_heap());
+      size_t free_count = xsh_free_count(test_heap());
       clock_t start = clock();
       xsh_free(test_heap(), arr[id]);
       sf += clock() - start;
       arr[id] = NULL;
       nf++;
-      CU_ASSERT_EQUAL(xsh_free_count(test_heap()), count + 1);
+      CU_ASSERT_EQUAL(xsh_count(test_heap()), count - 1);
+      CU_ASSERT_EQUAL(xsh_free_count(test_heap()), free_count + 1);
     } else {
+      count = xsh_count(test_heap());
       clock_t start = clock();
       arr[id] = xsh_alloc(test_heap(), TEST_HEAP_STRUCT_SIZE);
       sa += clock() - start;
       na++;
       CU_ASSERT_PTR_NOT_NULL(arr[id]);
+      CU_ASSERT_EQUAL(xsh_count(test_heap()), count + 1);
     }
   }
   printf("\r ===== 100%% : ");
@@ -754,5 +916,5 @@ static void test_perf() {
   double avga, avgf;
   avga = (double)sa * 1e9 / CLOCKS_PER_SEC / na;
   avgf = (double)sf * 1e9 / CLOCKS_PER_SEC / nf;
-  printf("#alloc. = %.3lf ns [%d ] #free. = %.3lf ns [%d] : ...", avga, na, avgf, nf);
+  printf("#alloc. = %.3lf ns [%d] #free. = %.3lf ns [%d] : ...", avga, na, avgf, nf);
 }

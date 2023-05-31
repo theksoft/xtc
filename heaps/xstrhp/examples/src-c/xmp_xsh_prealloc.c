@@ -4,8 +4,8 @@
     - Protected structure heap
 
   We assume the heap lives until the program ends.
-  Cleaner implmentation should take care of releasing allocated memory
-  and destroying protection mutex.
+  Cleaner implementation should take care of ending heap with xsh_end()
+  and destroying associated protection mutex.
 */
 
 #define XMP_PREALLOCATED_XSH_SIZE     30

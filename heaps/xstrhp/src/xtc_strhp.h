@@ -35,6 +35,8 @@ typedef struct {
   size_t size;                    /**< Size of managed structure. */
   size_t node_size, node_offset;  /**< Node size and offset. */
   xsh_node_t *lfree;              /**< List of free nodes. */
+  size_t count;                   /**< Count of allocated blocks. */
+  size_t free_count;              /**< Count of free blocks. */
 } xsh_heap_t;
 
 /**
@@ -53,6 +55,20 @@ typedef struct {
  */
 
 xtc_heap_t* xsh_init(xsh_heap_t *heap, void *mem, size_t length, size_t size, xtc_protect_t *protect);
+
+/**
+ * @brief End a structure heap object.
+ * 
+ * The function checks the structure heap content, reset the structure heap content.
+ * 
+ * @param heap Structure heap
+ * @param count Filled with the number of remaining allocated blocks. Can be @c NULL.
+ * @return 
+ * This function returns the memory pool originally used to initialize the provided
+ * structure heap with xsh_init(). It returns @c NULL on error.
+ */
+
+void* xsh_end(xsh_heap_t *heap, size_t *count);
 
 /**
  * @brief Allocate memory on the provided structure heap.
@@ -90,13 +106,21 @@ void* xsh_alloc(xsh_heap_t *heap, size_t size);
 void xsh_free(xsh_heap_t *heap, void *ptr);
 
 /**
- * @brief Get the count of free blocks
- * 
- * This implementation is time-consuming by looping the free list.
+ * @brief Get the count of allocated blocks.
  * 
  * @param heap Structure heap
  * @return
- * THe number of free blocks is returned.
+ * The number of allocated blocks is returned.
+ */
+
+size_t xsh_count(xsh_heap_t *heap);
+
+/**
+ * @brief Get the count of free blocks.
+ * 
+ * @param heap Structure heap
+ * @return
+ * The number of free blocks is returned.
  */
 
 size_t xsh_free_count(xsh_heap_t *heap);
