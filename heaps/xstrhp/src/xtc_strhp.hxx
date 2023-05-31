@@ -108,6 +108,18 @@ namespace xtc {
     }
 
     /**
+     * @brief Get the count of allocated blocks.
+     * 
+     * This method directly wraps to the C structure heap count function.
+     * 
+     * @return
+     * This method returns the count of allocated memory blocks as @c size_t.
+     */
+    virtual size_t count() {
+      return xsh_count(&_heap);
+    }
+
+    /**
      * @brief Get the count of remaining free memory blocks.
      * 
      * This method directly wraps to the C structure heap free count function.

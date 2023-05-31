@@ -849,7 +849,7 @@ static void end_test_protect() {
   void* pool = test_heap()->mem_pool;
   CU_ASSERT_PTR_EQUAL(xsh_end(test_heap(), NULL), pool);
   free(pool);
-  CU_ASSERT_EQUAL(lock_called, 2);
+  CU_ASSERT_EQUAL(lock_called, 1);
   CU_ASSERT_EQUAL(unlock_called, lock_called);
   CU_ASSERT_EQUAL(0, memcmp(test_heap(), &ref0, sizeof(xsh_heap_t)));
 
@@ -858,7 +858,7 @@ static void end_test_protect() {
   pool = test_heap()->mem_pool;
   CU_ASSERT_PTR_EQUAL(xsh_end(test_heap(), &count), pool);
   free(pool);
-  CU_ASSERT_EQUAL(lock_called, 2);
+  CU_ASSERT_EQUAL(lock_called, 1);
   CU_ASSERT_EQUAL(unlock_called, lock_called);
   CU_ASSERT_EQUAL(0, memcmp(test_heap(), &ref0, sizeof(xsh_heap_t)));
 
@@ -880,20 +880,25 @@ static void test_perf() {
       printf("\r ===== %03d%% : ", last);
     }
     int id = rand() % TEST_HEAP_SIZE;
+    size_t count = 0;
     if (arr[id]) {
-      size_t count = xsh_free_count(test_heap());
+      count = xsh_count(test_heap());
+      size_t free_count = xsh_free_count(test_heap());
       clock_t start = clock();
       xsh_free(test_heap(), arr[id]);
       sf += clock() - start;
       arr[id] = NULL;
       nf++;
-      CU_ASSERT_EQUAL(xsh_free_count(test_heap()), count + 1);
+      CU_ASSERT_EQUAL(xsh_count(test_heap()), count - 1);
+      CU_ASSERT_EQUAL(xsh_free_count(test_heap()), free_count + 1);
     } else {
+      count = xsh_count(test_heap());
       clock_t start = clock();
       arr[id] = xsh_alloc(test_heap(), TEST_HEAP_STRUCT_SIZE);
       sa += clock() - start;
       na++;
       CU_ASSERT_PTR_NOT_NULL(arr[id]);
+      CU_ASSERT_EQUAL(xsh_count(test_heap()), count + 1);
     }
   }
   printf("\r ===== 100%% : ");
