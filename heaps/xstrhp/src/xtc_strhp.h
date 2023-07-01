@@ -20,6 +20,11 @@ extern "C" {
  */
 typedef struct xsh_node_s {
   struct xsh_node_s *next;  /**< Next node in the list. */
+  int allocated;            /**< Indicates the block is allocated. */
+#ifdef __DEBUG
+  const char *fn;
+  int line;
+#endif
 } xsh_node_t;
 
 /**
@@ -82,12 +87,23 @@ void* xsh_end(xsh_heap_t *heap, size_t *count);
  * 
  * @param heap Structure heap
  * @param size Size to allocate
+ * @param fn [__DEBUG] File name where the call to xsh_alloc() takes place
+ * @param line [__DEBUG] File line where the call to wsh_alloc() takes place.
  * @return
  * The function returns the memory address related to a free structure heap node
  * as a @c void* or @c NULL if there is no more free space in the structure heap.
  */
 
+#ifndef __DEBUG
+
 void* xsh_alloc(xsh_heap_t *heap, size_t size);
+
+#else // __DEBUG
+
+void* xsh_alloc_dbg(xsh_heap_t *heap, size_t size, const char *fn, int line);
+#define xsh_alloc(heap, size)     xsh_alloc_dbg(heap, size, __FILE__, __LINE__)
+
+#endif  // __DEBUG
 
 /**
  * @brief Free a previously allocated pointer related to the provided local heap.
@@ -124,6 +140,19 @@ size_t xsh_count(xsh_heap_t *heap);
  */
 
 size_t xsh_free_count(xsh_heap_t *heap);
+
+/**
+ * @brief Dump the allocated blocks of a structure heap.
+ * 
+ * This function dumps all allocated blocks
+ * with the information where allocation takes place.
+ * 
+ * @param heap Structure heap
+ */
+
+#ifdef __DEBUG
+void xsh_dump(xsh_heap_t *heap);
+#endif  // __DEBUG
 
 #ifdef __cplusplus
 }
