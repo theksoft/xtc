@@ -1019,9 +1019,8 @@ static void frag_next() {
   // Make 4 allocations so that all memory is used and
   // with the second being the largest one being able to hold a future node
   xlh_stats_t stats;
-  int base = (int)sizeof(int);
-  int size[4] = { 0, 16*base, -6*base, -10*base };
-  assert((size_t)size[1] > sizeof(xlh_node_t) + 2*base);
+  int big = (int)(sizeof(xlh_node_t) + 4*sizeof(int));
+  int size[4] = { 0, big, -(int)(XTC_ALIGNED_SIZE(big/3)), (int)(XTC_ALIGNED_SIZE(big/3)) - big };
   void* ptr[4];
   frag_allocate_4(ptr, size);
   xlh_allocated_stats(test_heap(), &stats);
@@ -1098,9 +1097,8 @@ static void frag_previous() {
   // Make 4 allocations so that all memory is used and
   // with the second being the largest one being able to hold a future node
   xlh_stats_t stats;
-  int base = (int)sizeof(int);
-  int size[4] = { 0, 16*base, -6*base, -10*base };
-  assert((size_t)size[1] > sizeof(xlh_node_t) + 2*base);
+  int big = (int)(sizeof(xlh_node_t) + 4*sizeof(int));
+  int size[4] = { 0, big, -(int)(XTC_ALIGNED_SIZE(big/3)), (int)(XTC_ALIGNED_SIZE(big/3)) - big };
   void* ptr[4];
   frag_allocate_4(ptr, size);
   xlh_allocated_stats(test_heap(), &stats);

@@ -23,6 +23,11 @@ typedef struct xlh_node_s {
   size_t size;                    /**< Node available size. */
   xlh_node_ptrs_t blk;            /**< Next and previous node in the list of memory blocks (ordered by increasing address). */
   xlh_node_ptrs_t free;           /**< Next and previous node in the list of free blocks (ordered by decreasing size). */
+#ifdef __DEBUG
+  size_t requested;
+  const char *fn;
+  int line;
+#endif
 } xlh_node_t;
 
 typedef struct {
@@ -47,7 +52,16 @@ xtc_heap_t* xlh_init(xlh_heap_t *heap, void *mem, size_t length, xtc_protect_t *
 
 void* xlh_end(xlh_heap_t *heap, xlh_stats_t *stats);
 
+#ifndef __DEBUG
+
 void* xlh_alloc(xlh_heap_t *heap, size_t size);
+
+#else // __DEBUG
+
+void* xlh_alloc_dbg(xlh_heap_t *heap, size_t size, const char *fn, int line);
+#define xlh_alloc(heap, size)     xlh_alloc_dbg(heap, size, __FILE__, __LINE__)
+
+#endif  // __DEBUG
 
 void xlh_free(xlh_heap_t *heap, void *ptr);
 
@@ -58,6 +72,10 @@ size_t xlh_max_free_blk(xlh_heap_t *heap);
 void xlh_free_stats(xlh_heap_t *heap, xlh_stats_t *stats);
 
 void xlh_allocated_stats(xlh_heap_t *heap, xlh_stats_t *stats);
+
+#ifdef __DEBUG
+void xlh_dump(xlh_heap_t *heap);
+#endif  // __DEBUG
 
 #ifdef __cplusplus
 }

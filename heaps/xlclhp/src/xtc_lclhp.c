@@ -58,6 +58,10 @@ static void prepare_free_node(xlh_heap_t *heap, xlh_node_t *node, xlh_free_confi
 
 static xlh_node_t* get_node(xlh_heap_t *this, void *ptr);
 
+#ifdef __DEBUG
+static void dump(xlh_heap_t *heap);
+#endif
+
 static void dummy() {}
 
 //==================================================================================================
@@ -78,7 +82,12 @@ xtc_heap_t* xlh_init(xlh_heap_t *this, void *mem, size_t length, xtc_protect_t *
     if (!protect || (protect->lock && protect->unlock)) {
       memset(mem, 0, length);
       this->interface.id = get_id();
+#ifndef __DEBUG
       this->interface.alloc = (xtc_alloc_t)xlh_alloc;
+#else
+      this->interface.dump = (xtc_dump_t)xlh_dump;
+      this->interface.alloc_dbg = (xtc_alloc_t)xlh_alloc_dbg;
+#endif
       this->interface.free = (xtc_free_t)xlh_free;
       this->interface.count = (xtc_count_t)xlh_count;
       this->interface.end = (xtc_end_t)end;
@@ -105,6 +114,11 @@ void* xlh_end(xlh_heap_t *this, xlh_stats_t *stats) {
   if (heap) {
     xtc_protect_t protect = heap->protect;
     protect.lock();
+#ifdef __DEBUG
+    if (s->count) {
+      dump(heap);
+    }
+#endif
     rtn = heap->mem_pool;
     memset(heap, 0, sizeof(xlh_heap_t));
     protect.unlock();
@@ -115,7 +129,12 @@ void* xlh_end(xlh_heap_t *this, xlh_stats_t *stats) {
   return rtn;
 }
 
-void* xlh_alloc(xlh_heap_t *this, size_t size) {
+#ifndef __DEBUG
+void* xlh_alloc(xlh_heap_t *this, size_t size)
+#else
+void* xlh_alloc_dbg(xlh_heap_t *this, size_t size, const char *fn, int line)
+#endif
+{
   void *rtn = NULL;
   xlh_heap_t *heap = check(this);
   if (heap && size) {
@@ -129,6 +148,11 @@ void* xlh_alloc(xlh_heap_t *this, size_t size) {
       if (remain) {
         insert_free_node_fwd(heap, remain, free_start);
       }
+#ifdef __DEBUG
+      node->requested = size;
+      node->fn = fn;
+      node->line = line;
+#endif
       rtn = (void*)(node + 1);
       heap->count++;
     }
@@ -144,6 +168,11 @@ void xlh_free(xlh_heap_t *this, void *ptr) {
     xlh_node_t *node = get_node(heap, ptr);
     if (node && !is_free(heap, node)) {
       assert(heap->count > 0);
+#ifdef __DEBUG
+      node->requested = 0;
+      node->fn = NULL;
+      node->line = 0;
+#endif
       xlh_free_config_t cfg;
       prepare_free_node(heap, node, &cfg);
       // Remove from free list
@@ -227,6 +256,19 @@ void xlh_allocated_stats(xlh_heap_t *this, xlh_stats_t *stats) {
     heap->protect.unlock();
   }
 }
+
+#ifdef __DEBUG
+
+void xlh_dump(xlh_heap_t *this) {
+  xlh_heap_t *heap = check(this);
+  if (heap) {
+    heap->protect.lock();
+    dump(heap);
+    heap->protect.unlock();
+  }
+}
+
+#endif
 
 //==================================================================================================
 // Local functions implementation
@@ -417,9 +459,21 @@ static xlh_node_t* get_node(xlh_heap_t *heap, void *ptr) {
 
 #ifdef __DEBUG
 
-#include <stdio.h>
+static void dump(xlh_heap_t *heap) {
+  xlh_node_t *node;
+  printf("HEAP %p [%ld], Blks %p[%ld], Frees > %p %p <\n",
+    heap->mem_pool, heap->mem_length,
+    (void*)heap->head_blks, heap->count,
+    (void*)heap->head_free, (void*)heap->tail_free);
+  for (node = heap->head_blks; NULL != node; node = node->blk.next) {
+    if (!is_free(heap, node)) {
+      printf("\t%p[%ld?>%ld] @ %s (%d)\n",
+        (void*)(node + 1), node->requested, node->size, node->fn, node->line);
+    }
+  }
+}
 
-/* Not exported / not documented */
+/* Not exported / undocumented */
 void xlh_dump_heap(xlh_heap_t *this) {
   xlh_heap_t *heap = check(this);
   size_t i; xlh_node_t *node;
@@ -437,4 +491,4 @@ void xlh_dump_heap(xlh_heap_t *this) {
   }
 }
 
-#endif // __DEBUG
+#endif
