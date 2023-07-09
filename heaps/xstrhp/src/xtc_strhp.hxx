@@ -34,6 +34,8 @@ namespace xtc {
      * and initializes the wrapped C structure heap.
      * 
      * @param protect Optional protection interface
+     * 
+     * @see xsh_init()
      */
     Allocator(xtc_protect_t *protect = NULL) {
       memset(_memory, 0, XSH_HEAP_LENGTH(T, Count));
@@ -45,6 +47,8 @@ namespace xtc {
      * 
      * The destructor fills in the memory pool with 0
      * as well as the wrapped C structure heap (reset).
+     * 
+     * @see xsh_end()
      */
     virtual ~Allocator() {
       xsh_end(&_heap, NULL);
@@ -64,6 +68,8 @@ namespace xtc {
      * @return
      * This method returns the memory address of an allocated structure as a
      * generic @c void*. It retusn @c NULL if there is no more free memory space.
+     * 
+     * @see xsh_alloc()
      */
     virtual void* allocate(size_t size) {
       return (T*)xsh_alloc(&_heap, size);
@@ -76,6 +82,8 @@ namespace xtc {
      * 
      * @param ptr Pointer to a memory block to be freed.
      *            The block must have been previously allocated with the Allocator.
+     * 
+     * @see xsh_free()
      */
     virtual void free(void *ptr) {
       xsh_free(&_heap, ptr);
@@ -114,6 +122,8 @@ namespace xtc {
      * 
      * @return
      * This method returns the count of allocated memory blocks as @c size_t.
+     * 
+     * @see xsh_count()
      */
     virtual size_t count() {
       return xsh_count(&_heap);
@@ -126,6 +136,8 @@ namespace xtc {
      * 
      * @return
      * This method returns the count of remaining memory blocks as @c size_t.
+     * 
+     * @see xsh_free_count()
      */
     size_t freeCount() {
       return xsh_free_count(&_heap);

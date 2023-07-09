@@ -273,7 +273,7 @@ static xsh_node_t* get_node(xsh_heap_t *heap, void *ptr) {
 /**
  * @brief Dump the heap allocated block information.
  * 
- * @param heap Structure heap
+ * @param heap Valid structure heap object
  */
 
 static void dump(xsh_heap_t *heap) {
