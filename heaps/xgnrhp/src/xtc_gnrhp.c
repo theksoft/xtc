@@ -1,0 +1,44 @@
+#include "xtc_gnrhp.h"
+#include <stdint.h>
+
+#ifdef __DEBUG
+
+void* xtc_alloc_dbg(xtc_heap_t *this, size_t size, const char *fn, int line) {
+  return (this) ? this->alloc_dbg(this, size, fn, line) : NULL;
+}
+
+#else /* __DEBUG */
+
+void* xtc_alloc(xtc_heap_t *this, size_t size) {
+  return (this) ? this->alloc(this, size) : NULL;
+}
+
+#endif  /* __DEBUG */
+
+void xtc_free(xtc_heap_t *this, void *ptr) {
+  if (this) {
+    this->free(this, ptr);
+  }
+}
+
+size_t xtc_count(xtc_heap_t *this) {
+  return (this) ? this->count(this) : (size_t)-1;
+}
+
+void* xtc_end(xtc_heap_t *this, size_t* count) {
+  void *rtn = NULL;
+  if (this) {
+    rtn = this->end(this, count);
+  }
+  return rtn;
+}
+
+#ifdef __DEBUG
+
+void xtc_dump(xtc_heap_t *this) {
+  if (this) {
+    this->dump(this);
+  }
+}
+
+#endif

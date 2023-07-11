@@ -5,6 +5,6 @@ all tests examples:
 	@echo "----- GOFS BUILD DONE / lib = $(LIBNAME) / @ = $@ -----"
 
 clean:
-	@-rm -rf $(BUILD)
+	@-$(RM) -r $(BUILD)
 
 .PHONY: all clean tests examples

@@ -2,6 +2,7 @@ build/
 */build/
 */*/build/
 */*/tests/build/
+*/*/example/build/
 
 # Prerequisites
 *.d

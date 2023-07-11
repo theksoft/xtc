@@ -1,7 +1,7 @@
-BUILD ?= build
-LIBNAME ?= xtcallocs
+BUILD ?= ./build
+LIBNAME ?= xtcheaps
 
-PKGS := ssa
+PKGS := xstrhp xsyshp xgnrhp
 PKGBLD := ../$(BUILD)
 TARGET =
 
@@ -11,14 +11,20 @@ examples: TARGET = examples
 clean: TARGET = clean
 clean: PKGBLD = build
 
-all tests examples: $(PKGS)
-	@echo "----- ALLOCS BUILD DONE / lib = $(LIBNAME) / @ = $@ -----"
+# Main target
 
-clean: $(PKGS)
-	@-rm -rf $(BUILD)
+all tests examples: $(PKGS)
+	@echo "..... HEAPS BUILD DONE / lib = $(LIBNAME) ....."
+
+# Package targets
 
 $(PKGS):
 	@echo
 	$(MAKE) -C $@ BUILD=$(PKGBLD) LIBNAME=$(LIBNAME) $(TARGET)
+
+# Other targets
+
+clean: $(PKGS)
+	@-$(RM) -r $(BUILD)
 
 .PHONY: all clean tests examples $(PKGS)
