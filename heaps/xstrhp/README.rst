@@ -67,7 +67,7 @@ Chaining free memory blocks eases the allocation management:
 - free operation is pushing the memory block in the list
   which additional cost overhead is very light compared to just unsetting **allocated** flag.
 
-Other additional fields allow to track memory leak with debug version of the libray.
+Other additional fields allow to track memory leak when using the debug version of the libray.
 Check the **xsh_dump()** function and other information function.
 
 The user payload start after the information fields and can hold the provide structure size.
@@ -77,7 +77,7 @@ The user payload start after the information fields and can hold the provide str
 
 The heap structure holds all necessary information to manage the memory pool.
 
-- Some value like **node_offset**, **allocated_count**, **free_count** are precomputed or maintained
+- Some value like **node_offset**, **allocated_count** and **free_count** are precomputed or maintained
   during allocation invocations to speed up the latter.
 
 - The **lfree** field is the head of free memory blocks.
@@ -129,9 +129,8 @@ It may be compliant with earlier C standard but this has not been checked.
 6.2. License
 ------------
 
-It is provided under the MIT Llicense, check the LICENSE file for more information.
+This implementation is provided under the MIT Llicense, check the LICENSE file for more information.
 
 Visit theksoft_ for more source material.
 
 .. _theksoft: https://github.com/theksoft/xtc
-
