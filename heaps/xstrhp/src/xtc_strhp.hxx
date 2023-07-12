@@ -72,7 +72,7 @@ namespace xtc {
      * @see xsh_alloc()
      */
     virtual void* allocate(size_t size) {
-      return (T*)xsh_alloc(&_heap, size);
+      return xsh_alloc(&_heap, size);
     }
 
     /**

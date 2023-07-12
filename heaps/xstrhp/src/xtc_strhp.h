@@ -55,7 +55,7 @@ typedef struct {
   void *mem_pool;                 /**< Initially allocated pool. */
   size_t mem_length;              /**< Length of initially allocated pool. */
   size_t size;                    /**< Size of managed structure. */
-  size_t node_size, node_offset;  /**< Size and node offset. */
+  size_t node_size, node_offset;  /**< Node size and offset. */
   xsh_node_t *lfree;              /**< List of free nodes. */
   size_t count;                   /**< Count of allocated blocks. */
   size_t free_count;              /**< Count of free blocks. */

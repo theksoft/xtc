@@ -1,7 +1,7 @@
 BUILD ?= ./build
 LIBNAME ?= xtcheaps
 
-PKGS := xstrhp xsyshp xgnrhp
+PKGS := xstrhp xlclhp xsyshp xgnrhp
 PKGBLD := ../$(BUILD)
 TARGET =
 
