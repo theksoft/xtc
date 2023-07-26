@@ -22,7 +22,7 @@ or if concurrency protection is managed externally to the implementation.
 
 The **protect** structure parameter must provide a valid **lock()** and **unlock()** functions that are called
 by the implementation to control the local heap accesses from thread concurrency.
-The provided locking functions should be unique par heap unless several heaps share a common feature to protect.
+The provided locking functions should be unique per heap unless several heaps share a common feature to protect.
 
 Refer to the provided examples located in *./examples/src-c/* showing how to achieve it with C11 threading feature.
 It can be easily adapted to any threading system.
@@ -127,7 +127,7 @@ with another type of heap including system heap or another local heap.
 4. Usage
 ========
 
-- The memory pool must be allocated sttaically or dynamically.
+- The memory pool must be allocated statically or dynamically.
 - A heap structure can be declared statically of dynamically.
 - The heap allocated structure must be initialized with the allocated memory pool
   and optionally protection functions with the **xlh_init()** function.
