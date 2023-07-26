@@ -47,7 +47,7 @@ static inline void check_node_size() {
  * @brief Check that the provided heap is the expected type.
  *
  * As the heap structure has been cast in more generic type @c xtc_heap_t,
- * this function purpose ensure the right type of heap has been provided
+ * this function purpose ensures the right type of heap has been provided
  * e.g. is a @c xlh_heap_t type.
  *
  * @param this Provided heap structure.
@@ -601,7 +601,7 @@ static void prepare_free_node(xlh_heap_t *heap, xlh_node_t *node, xlh_free_confi
  * The provided pointer @c ptr is valid if the address content is located in the range of the
  * initial configured memory pool and if the identifier is the same as the heap.
  * 
- * @param heap The heap to which the provided pointer ptr belongs.
+ * @param heap The heap which the provided pointer ptr belongs to.
  * @param ptr The allocated local heap node.
  * @return
  * The function returns a valid @c xlh_node_t* related to the provided pointer @c ptr

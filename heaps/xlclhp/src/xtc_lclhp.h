@@ -90,7 +90,7 @@ typedef struct {
  */
 typedef struct {
   size_t  count;                  /**< Count of memory blocks. */
-  size_t  total_size;             /**< Total actual size. */
+  size_t  total_size;             /**< Current total size. */
   size_t  max_block_size;         /**< Actual size of the largest block. */
 } xlh_stats_t;
 
@@ -104,7 +104,7 @@ typedef struct {
  * @return
  * This function returns a generic XTC heap interface address @c xtc_heap_t*
  * related to the initialized local heap.
- * Allocation and freeing can be performed using directly @c xsh_alloc() and @c xsh_free()
+ * Allocation and freeing can be performed using directly @c xlh_alloc() and @c xlh_free()
  * or by calling @c alloc() and @c free() fields of this returned interface.
  * 
  * @see xlh_end()
@@ -119,7 +119,7 @@ xtc_heap_t* xlh_init(xlh_heap_t *heap, void *mem, size_t length, xtc_protect_t *
  * 
  * @param heap Initialized local heap
  * @param stats Filled with the allocated blocks stats before ending. Can be @c NULL.
- * @return void* 
+ * @return
  * This function returns the memory pool originally used to initialize the provided
  * local heap with xlh_init(). It returns @c NULL on error.
  * 

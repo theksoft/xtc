@@ -12,14 +12,38 @@
 // Local inline functions
 //==================================================================================================
 
+/**
+ * @brief Get the system heap object identifier.
+ * 
+ * @return
+ * This function returns the system heap identifier as @c xtc_heaps_id_t.
+ */
+
 static xtc_heaps_id_t get_id() {
   static unsigned int ref = 0x0FEEDBABE;
   return (xtc_heaps_id_t)(uintptr_t)&ref;
 }
 
+/**
+ * @brief Check that the provided heap is the expected type.
+ *
+ * As the heap structure has been cast in more generic type @c xtc_heap_t,
+ * this function purpose ensures the right type of heap has been provided
+ * e.g. is a @c xss_heap_t type.
+ *
+ * @param this Provided heap structure.
+ * @return
+ * This function returns back the provided heap structure if the latter is correct
+ * or @c NULL if it is not the expected structure.
+ */
+
 static inline xss_heap_t* check(xss_heap_t *this) {
   return this && this->interface.id == get_id() ? this : NULL;
 }
+
+//==================================================================================================
+// Local functions declaration
+//==================================================================================================
 
 static xss_node_t* get_node(xss_heap_t *this, void *ptr);
 
@@ -163,9 +187,35 @@ size_t xss_total_size(xss_heap_t *this) {
   return rtn;
 }
 
+#ifdef __DEBUG
+
+void xss_dump(xss_heap_t *this) {
+  xss_heap_t *heap = check(this);
+  if (heap) {
+    heap->protect.lock();
+    dump(heap);
+    heap->protect.unlock();
+  }
+}
+
+#endif
+
 //==================================================================================================
 // Local functions implementation
 //==================================================================================================
+
+/**
+ * @brief Get the system heap node object related to the provided pointer.
+ * 
+ * System heap validity must have been checked by caller.
+ * The provided pointer @c ptr is valid if the identifier is the same as the heap.
+ * 
+ * @param heap The heap which the provided pointer ptr belongs to.
+ * @param ptr The allocated system heap node.
+ * @return
+ * The function returns a valid @c xss_node_t* related to the provided pointer @c ptr
+ * or @c NULL if the provided pointer does not belong to the provided heap.
+ */
 
 static xss_node_t* get_node(xss_heap_t *heap, void *ptr) {
   xss_node_t *rtn = NULL;
