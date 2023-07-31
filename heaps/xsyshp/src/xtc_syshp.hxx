@@ -12,7 +12,7 @@ namespace xtc {
    * 
    * This class wraps a C system heap @c xss_heap_t.
    * It has little interest apart providing the same interface as other allocator.
-   * => new & delete operator are already operating on hte system heap unless redirected.
+   * => new & delete operator are already operating on the system heap unless redirected.
    */
   class Allocator : public xtc::Allocator {
   protected:

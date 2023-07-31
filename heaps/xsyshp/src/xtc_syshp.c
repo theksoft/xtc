@@ -127,7 +127,7 @@ void* xss_alloc_dbg(xss_heap_t *this, size_t size, const char *fn, int line)
       node->line = line;
       node->previous = NULL;
       node->next = heap->head;
-      if (heap->head->previous) {
+      if (heap->head) {
         heap->head->previous = node;
       }
       heap->head = node;
