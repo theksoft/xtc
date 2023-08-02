@@ -1,5 +1,7 @@
-BUILD ?= build
+BUILD ?= ./build
 LIBNAME ?= xtcsyshp
+
+PKGBLD := ../$(BUILD)
 
 # Predefined folders
 
@@ -31,9 +33,11 @@ all: dirs $(LIBTGT).a $(LIBTGT)d.a
 	@echo "..... XTC SYSTEM HEAP BUILD DONE / lib = $(LIBNAME) ....."
 
 tests: dirs $(LIBTGT).a $(LIBTGT)d.a
+	$(MAKE) -C tests BUILD=$(PKGBLD) LIBNAME=$(LIBNAME)
 	@echo "..... XTC SYSTEM HEAP TEST BUILD DONE / test = $(TSTNAME) ....."
 
 examples: dirs $(LIBTGT).a $(LIBTGT)d.a
+	$(MAKE) -C examples BUILD=$(PKGBLD) LIBNAME=$(LIBNAME)
 	@echo "..... XTC SYSTEM HEAP EXAMPLE BUILD DONE / example = $(XMPNAME) ....."
 
 # Dependencies management
@@ -48,7 +52,7 @@ $(OBJD)/%.d: $(SRCD)/%.c | $(OBJD)
 $(LIBTGT).a: CFLAGS += -O2 -DNDEBUG=1
 $(LIBTGT)d.a: CFLAGS += -g -D__DEBUG
 
-# CompilationObject files build rules
+# Object files build rules
 
 $(OBJD)/%.o: $(SRCD)/%.c
 	$(CC) $(CFLAGS) -c $< -o $@
@@ -66,15 +70,17 @@ $(LIBTGT)d.a: $(SRCS:%=$(OBJD)/%-g.o)
 
 # Other targets
 
-clean: $(PKGS)
+clean:
 	@-$(RM) -r $(BUILD)
+	@$(MAKE) -C tests clean
+	@$(MAKE) -C examples clean
 
 dirs: $(DIRS)
 
 $(DIRS):
 	@mkdir -p $@
 
-.PHONY: all clean tests examples dirs $(DIRS)
+.PHONY: all clean tests examples dirs
 
 # Dependencies
 

@@ -46,7 +46,7 @@ namespace xtc {
      * @brief Destroy the Allocator object
      * 
      * The destructor fills in the memory pool with 0
-     * as well as the wrapped C structure heap (reset).
+     * and wraps the C structure heap end method(reset).
      * 
      * @see xsh_end()
      */

@@ -45,7 +45,7 @@ namespace xtc {
      * @brief Destroy the Allocator object
      * 
      * The destructor fills in the memory pool with 0
-     * as well as the wrapped C local heap (reset).
+     * and wraps C local heap end method (reset).
      * 
      * @see xlh_end()
      */
@@ -109,7 +109,7 @@ namespace xtc {
      * @return
      * This method returns the size of the largest free memory block as @c size_t.
      * 
-     * @see clh_max_free_blok()
+     * @see xlh_max_free_blk()
      */
     size_t maxFreeBlk() {
       return xlh_max_free_blk(&_heap);

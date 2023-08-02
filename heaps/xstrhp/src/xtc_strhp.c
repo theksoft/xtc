@@ -47,7 +47,7 @@ static inline void check_node_size() {
  * @brief Check that the provided heap is the expected type.
  *
  * As the heap structure has been cast in more generic type @c xtc_heap_t,
- * this function purpose ensure the right type of heap has been provided
+ * this function purpose ensures the right type of heap has been provided
  * e.g. is a @c xsh_heap_t type.
  *
  * @param this Provided heap structure.
@@ -246,7 +246,7 @@ void xsh_dump(xsh_heap_t *this) {
  * initial configured memory pool and if the difference between the associated node address
  * and the base memory pool address is a modulo of the node size.
  * 
- * @param heap The heap to which the provided pointer ptr belongs.
+ * @param heap The heap which the provided pointer ptr belongs to.
  * @param ptr The allocated structure heap node.
  * @return
  * The function returns valid @c xsh_node_t* related to the provided pointer @c ptr
